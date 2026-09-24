@@ -24,6 +24,11 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <spring-cloud.version>2023.0.3</spring-cloud.version>
         <spring-cloud-alibaba.version>2023.0.3.2</spring-cloud-alibaba.version>
+        <!-- P1：用原始 rocketmq-client，不用 rocketmq-spring-boot-starter。
+             starter 2.2.3 只通过 META-INF/spring.factories 注册自动配置，而 Spring Boot 3 已移除该机制，
+             它的 RocketMQAutoConfiguration 根本不会被加载（RocketMQTemplate 会静默不存在）。
+             选 5.5.0 是为了与 broker 5.5.1 只差一个补丁号。 -->
+        <rocketmq.version>5.5.0</rocketmq.version>
     </properties>
 
     <dependencyManagement>
@@ -41,6 +46,11 @@
                 <version>${spring-cloud-alibaba.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.rocketmq</groupId>
+                <artifactId>rocketmq-client</artifactId>
+                <version>${rocketmq.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

@@ -24,11 +24,14 @@ import edu.swu.fcj.my12306.biz.payservice.remote.dto.TicketOrderDetailRespDTO;
 import edu.swu.fcj.my12306.biz.payservice.remote.dto.TicketOrderPassengerDetailRespDTO;
 import edu.swu.fcj.my12306.biz.payservice.remote.dto.TicketPayCallbackRemoteReqDTO;
 import edu.swu.fcj.my12306.biz.payservice.remote.dto.TicketSeatRemoteDTO;
+import edu.swu.fcj.my12306.biz.payservice.mq.PayNotifyMessageSender;
 import edu.swu.fcj.my12306.biz.payservice.service.PayService;
 import edu.swu.fcj.my12306.biz.payservice.service.channel.PayChannelHandler;
 import edu.swu.fcj.my12306.biz.payservice.service.channel.PayChannelFactory;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
@@ -50,12 +53,26 @@ import java.util.List;
 @RequiredArgsConstructor
 public class PayServiceImpl implements PayService {
 
+    private static final String MQ_NOTIFY_MODE = "mq";
+
     private final PayMapper payMapper;
 
     /** 支付回调的事务内部分。单独成 Bean，好让事务在它返回时完整结束，远程调用才落在事务之外。 */
     private final PayCallbackTxService payCallbackTxService;
 
+    /**
+     * MQ 发送器。它在 mq 模式下才存在（@ConditionalOnProperty），所以用 ObjectProvider 取，
+     * 与项目里 OrderDelayCloseProducer 的取用方式一致。
+     */
+    private final ObjectProvider<PayNotifyMessageSender> notifySenderProvider;
+
     private final PayChannelFactory payChannelFactory;
+
+    /**
+     * 通知模式：feign（默认）/ mq。既是回归保险，也是 A/B 压测的开关。
+     */
+    @Value("${my12306.pay.notify-mode:feign}")
+    private String notifyMode;
 
     private final OrderRemoteService orderRemoteService;
 
@@ -137,10 +154,15 @@ public class PayServiceImpl implements PayService {
      * <p>
      * 注意本方法【不带】{@code @Transactional}：事务边界在 {@link PayCallbackTxService#markPaid}，
      * 它返回时事务已完整结束（提交 + 归还连接 + 清理 ThreadLocal），下游通知在那之后才执行，
-     * 因此 {@link #notifyPayResult} 里的 3 次远程调用不再被圈进事务 —— 这是 P1 段1 修的边界问题。
+     * 因此通知所用的远程调用/MQ 发送都不在事务里 —— 这是 P1 段1 修的边界问题。
      * <p>
-     * 返回值语义是"支付是否已入账"，不再是"下游是否已通知"：渠道只关心我们记下了这笔支付；
-     * 下游通知失败不回滚支付单，由 {@code PayNotifyCompensateJob} 重推（见本类注释第 3 条）。
+     * P1 段2 在这里加了模式开关，两条路径都完整、互不污染（A/B 压测靠这个开关）：
+     * - {@code feign}（默认）：调 {@link #notifyPayResult}，同步串行调 order 与 ticket —— 与 P1 之前的行为一致；
+     * - {@code mq}：向 MQ 投一条 PAY_SUCCESS（消息已在事务里落库），此后由 order / ticket 各自消费，
+     *   支付服务不再知道下游是谁。
+     * <p>
+     * 返回值语义是"支付是否已入账"，不是"下游是否已通知"：渠道只关心我们记下了这笔支付；
+     * 下游通知失败不回滚支付单，由补偿任务重推（见本类注释第 3 条）。
      */
     @Override
     public boolean payCallback(PayCallbackReqDTO requestParam) {
@@ -151,10 +173,22 @@ public class PayServiceImpl implements PayService {
             throw new ServiceException("支付金额不能为空");
         }
         boolean recorded = payCallbackTxService.markPaid(requestParam);
-        // 事务已结束，这时才通知下游。
-        // 注意：这里是同线程同步调用，所以本次 HTTP 响应仍要等两次 Feign 返回 ——
-        // 真正把响应时间降下来的异步化在 P1 段2（改投 MQ）完成，本段只修事务边界。
-        if (recorded) {
+        if (!recorded) {
+            return false;
+        }
+        if (MQ_NOTIFY_MODE.equalsIgnoreCase(notifyMode)) {
+            // 事务已结束。只投一条消息就返回 —— 响应时间不再等于"两个下游之和"。
+            // 这里失败不影响入账：消息 status 仍是 0，扫描任务会补发。
+            PayNotifyMessageSender sender = notifySenderProvider.getIfAvailable();
+            if (sender == null) {
+                log.error("mq 模式下未找到消息发送器，本次不发，等待扫描任务兜底。paySn={}", requestParam.getPaySn());
+            } else {
+                sender.sendByPaySn(requestParam.getPaySn());
+            }
+        } else {
+            // 事务已结束，这时才通知下游。
+            // 注意：这里是同线程同步调用，所以本次 HTTP 响应仍要等两次 Feign 返回 ——
+            // feign 模式下响应时间本就不该变（这正是 A/B 对照的意义）。
             notifyPayResult(requestParam.getPaySn());
         }
         return recorded;

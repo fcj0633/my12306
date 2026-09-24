@@ -2,26 +2,26 @@
     {
         "name":  "user",
         "port":  9001,
-        "pid":  15860
+        "pid":  22952
     },
     {
         "name":  "ticket",
         "port":  9002,
-        "pid":  31680
+        "pid":  932
     },
     {
         "name":  "order",
         "port":  9003,
-        "pid":  5224
+        "pid":  30120
     },
     {
         "name":  "pay",
         "port":  9004,
-        "pid":  35096
+        "pid":  22712
     },
     {
         "name":  "gateway",
         "port":  9000,
-        "pid":  5128
+        "pid":  37124
     }
 ]

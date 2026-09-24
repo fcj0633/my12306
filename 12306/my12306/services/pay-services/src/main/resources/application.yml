@@ -51,3 +51,15 @@ my12306:
     notify-compensate-enabled: true
     # 下游通知补偿任务扫描间隔（毫秒）
     notify-compensate-interval-ms: 60000
+    # 通知模式：feign（默认，同步串行调 order/ticket）/ mq（投 PAY_SUCCESS，由下游各自消费）
+    # 既是回归保险，也是 A/B 压测的开关。默认 feign 保证不改配置时行为与 P1 之前一致。
+    notify-mode: ${MY12306_PAY_NOTIFY_MODE:feign}
+    # mq 模式下本地消息表的兜底扫描间隔与批量
+    notify-message-scan-interval-ms: 10000
+    notify-message-scan-batch-size: 100
+    # 超过这个重试次数仍发不出去的消息不再自动重发，只计数告警（需人工介入）
+    notify-message-max-retry: 10
+  rocketmq:
+    # mq 模式才会用到；feign 模式下生产者 Bean 不会被创建，也不会去连 broker
+    namesrv-addr: ${MY12306_ROCKETMQ_NAMESRV:127.0.0.1:9876}
+    producer-group: my12306-pay-notify-producer

@@ -24,6 +24,11 @@
     </properties>
 
     <dependencies>
+        <!-- P1：订单侧既是 PAY_SUCCESS 的消费者，也是 ORDER_PAID 的生产者。 -->
+        <dependency>
+            <groupId>org.apache.rocketmq</groupId>
+            <artifactId>rocketmq-client</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>

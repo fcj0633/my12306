@@ -57,3 +57,11 @@ my12306:
     orphan-scan-interval-ms: ${MY12306_ORPHAN_SCAN_INTERVAL_MS:60000}
     orphan-age-minutes: ${MY12306_ORPHAN_AGE_MINUTES:25}
     orphan-scan-batch-size: ${MY12306_ORPHAN_SCAN_BATCH_SIZE:100}
+  # 通知模式：feign（默认，等价于本服务不参与 MQ）/ mq（本服务消费 ORDER_PAID）
+  # 三个服务必须用同一个值，否则链路会断（例如 pay 投了消息但 ticket 没在听）
+  pay:
+    notify-mode: ${MY12306_PAY_NOTIFY_MODE:feign}
+  rocketmq:
+    namesrv-addr: ${MY12306_ROCKETMQ_NAMESRV:127.0.0.1:9876}
+    # 消费者组：与订单侧的 -order-cg 不同，且订阅的 tag 也不同（ORDER_PAID vs PAY_SUCCESS）
+    ticket-consumer-group: my12306-pay-notify-ticket-cg
