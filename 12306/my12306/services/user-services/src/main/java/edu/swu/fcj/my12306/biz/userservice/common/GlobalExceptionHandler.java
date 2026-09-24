@@ -1,0 +1,51 @@
+package edu.swu.fcj.my12306.biz.userservice.common;
+
+import org.springframework.context.support.DefaultMessageSourceResolvable;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+/**
+ * 统一异常出口：所有异常在这里转成统一的 Result 结构
+ */
+@RestControllerAdvice
+public class GlobalExceptionHandler {
+
+    /**
+     * 业务异常：如"用户名已存在""手机号已注册"
+     */
+    @ExceptionHandler(ServiceException.class)
+    public Result<Void> serviceException(ServiceException e) {
+        return new Result<Void>().setCode("500").setMessage(e.getMessage());
+    }
+
+    /**
+     * 参数校验失败（@RequestBody + @Valid）：取第一个字段错误信息返回给前端
+     */
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public Result<Void> validException(MethodArgumentNotValidException e) {
+        String message = e.getBindingResult().getFieldErrors().stream()
+                .findFirst()
+                .map(DefaultMessageSourceResolvable::getDefaultMessage)
+                .orElse("参数校验失败");
+        return new Result<Void>().setCode("400").setMessage(message);
+    }
+
+    /**
+     * 请求体不是合法 JSON（或字段类型不匹配）：在进入 @Valid 之前反序列化就失败
+     */
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public Result<Void> messageNotReadableException(HttpMessageNotReadableException e) {
+        return new Result<Void>().setCode("400").setMessage("请求体格式错误");
+    }
+
+    /**
+     * 兜底：未知异常统一返回"系统异常"，避免堆栈信息泄露给前端
+     */
+    @ExceptionHandler(Exception.class)
+    public Result<Void> exception(Exception e) {
+        return new Result<Void>().setCode("500").setMessage("系统异常");
+    }
+}
+

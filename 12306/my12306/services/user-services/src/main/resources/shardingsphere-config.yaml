@@ -1,0 +1,162 @@
+dataSources:
+  ds_0:
+    dataSourceClassName: com.zaxxer.hikari.HikariDataSource
+    driverClassName: com.mysql.cj.jdbc.Driver
+    jdbcUrl: jdbc:mysql://127.0.0.1:3306/12306_user_0?useUnicode=true&characterEncoding=UTF-8&rewriteBatchedStatements=true&allowMultiQueries=true&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+    username: root
+    password: 274226
+  ds_1:
+    dataSourceClassName: com.zaxxer.hikari.HikariDataSource
+    driverClassName: com.mysql.cj.jdbc.Driver
+    jdbcUrl: jdbc:mysql://127.0.0.1:3306/12306_user_1?useUnicode=true&characterEncoding=UTF-8&rewriteBatchedStatements=true&allowMultiQueries=true&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+    username: root
+    password: 274226
+
+rules:
+  - !SHARDING
+    tables:
+      t_user:
+        actualDataNodes: ds_${0..1}.t_user_${0..31}
+        databaseStrategy:
+          standard:
+            shardingColumn: username
+            shardingAlgorithmName: user_database_hash_mod
+        tableStrategy:
+          standard:
+            shardingColumn: username
+            shardingAlgorithmName: user_table_hash_mod
+      t_user_phone:
+        actualDataNodes: ds_${0..1}.t_user_phone_${0..31}
+        databaseStrategy:
+          standard:
+            shardingColumn: phone
+            shardingAlgorithmName: t_user_phone_database_hash_mod
+        tableStrategy:
+          standard:
+            shardingColumn: phone
+            shardingAlgorithmName: t_user_phone_table_hash_mod
+      t_user_mail:
+        actualDataNodes: ds_${0..1}.t_user_mail_${0..31}
+        databaseStrategy:
+          standard:
+            shardingColumn: mail
+            shardingAlgorithmName: t_user_mail_database_hash_mod
+        tableStrategy:
+          standard:
+            shardingColumn: mail
+            shardingAlgorithmName: t_user_mail_table_hash_mod
+      t_passenger:
+        actualDataNodes: ds_${0..1}.t_passenger_${0..31}
+        databaseStrategy:
+          standard:
+            shardingColumn: username
+            shardingAlgorithmName: passenger_database_hash_mod
+        tableStrategy:
+          standard:
+            shardingColumn: username
+            shardingAlgorithmName: passenger_table_hash_mod
+    shardingAlgorithms:
+      user_database_hash_mod:
+        type: CLASS_BASED
+        props:
+          sharding-count: 32
+          table-sharding-count: 16
+          strategy: standard
+          algorithmClassName: edu.swu.fcj.my12306.biz.userservice.config.sharding.CustomDbHashModShardingAlgorithm
+      user_table_hash_mod:
+        # 5.5 起手动分片表（tables + actualDataNodes）不允许使用自动分片算法 HASH_MOD，
+        # 故表算法也走 CLASS_BASED：table-sharding-count=1 时 |hash|%32/1 = 0..31，与原 HASH_MOD 语义一致
+        type: CLASS_BASED
+        props:
+          strategy: standard
+          sharding-count: 32
+          table-sharding-count: 1
+          algorithmClassName: edu.swu.fcj.my12306.biz.userservice.config.sharding.CustomDbHashModShardingAlgorithm
+      t_user_phone_database_hash_mod:
+        type: CLASS_BASED
+        props:
+          sharding-count: 32
+          table-sharding-count: 16
+          strategy: standard
+          algorithmClassName: edu.swu.fcj.my12306.biz.userservice.config.sharding.CustomDbHashModShardingAlgorithm
+      t_user_phone_table_hash_mod:
+        type: CLASS_BASED
+        props:
+          strategy: standard
+          sharding-count: 32
+          table-sharding-count: 1
+          algorithmClassName: edu.swu.fcj.my12306.biz.userservice.config.sharding.CustomDbHashModShardingAlgorithm
+      t_user_mail_database_hash_mod:
+        type: CLASS_BASED
+        props:
+          sharding-count: 32
+          table-sharding-count: 16
+          strategy: standard
+          algorithmClassName: edu.swu.fcj.my12306.biz.userservice.config.sharding.CustomDbHashModShardingAlgorithm
+      t_user_mail_table_hash_mod:
+        type: CLASS_BASED
+        props:
+          strategy: standard
+          sharding-count: 32
+          table-sharding-count: 1
+          algorithmClassName: edu.swu.fcj.my12306.biz.userservice.config.sharding.CustomDbHashModShardingAlgorithm
+      passenger_database_hash_mod:
+        type: CLASS_BASED
+        props:
+          strategy: standard
+          sharding-count: 32
+          table-sharding-count: 16
+          algorithmClassName: edu.swu.fcj.my12306.biz.userservice.config.sharding.CustomDbHashModShardingAlgorithm
+      passenger_table_hash_mod:
+        type: CLASS_BASED
+        props:
+          strategy: standard
+          sharding-count: 32
+          table-sharding-count: 1
+          algorithmClassName: edu.swu.fcj.my12306.biz.userservice.config.sharding.CustomDbHashModShardingAlgorithm
+  # 未分片单表：只存在于 ds_0，用 SINGLE 规则挂载（5.5.x 推荐做法）
+  - !SINGLE
+    tables:
+      - ds_0.t_user_reuse
+      - ds_0.t_user_deletion
+    defaultDataSource: ds_0
+  - !ENCRYPT
+    tables:
+      t_user:
+        columns:
+          id_card:
+            cipher:
+              name: id_card
+              encryptorName: common_encryptor
+          phone:
+            cipher:
+              name: phone
+              encryptorName: common_encryptor
+          mail:
+            cipher:
+              name: mail
+              encryptorName: common_encryptor
+          address:
+            cipher:
+              name: address
+              encryptorName: common_encryptor
+      t_passenger:
+        columns:
+          id_card:
+            cipher:
+              name: id_card
+              encryptorName: common_encryptor
+          phone:
+            cipher:
+              name: phone
+              encryptorName: common_encryptor
+    encryptors:
+      common_encryptor:
+        type: AES
+        props:
+          aes-key-value: my12306AesKey2026
+          # 5.5.x 起 AES 算法要求显式指定摘要算法（5.3 可省略）
+          digest-algorithm-name: SHA-1
+
+props:
+  sql-show: false

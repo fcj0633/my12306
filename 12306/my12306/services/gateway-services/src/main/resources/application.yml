@@ -1,0 +1,50 @@
+server:
+  port: 9000
+
+spring:
+  application:
+    name: my12306-gateway-service
+  data:
+    redis:
+      host: ${MY12306_REDIS_HOST:192.168.204.128}
+      port: ${MY12306_REDIS_PORT:6379}
+      password: ${MY12306_REDIS_PASSWORD:274226}
+  cloud:
+    nacos:
+      discovery:
+        server-addr: ${MY12306_NACOS_ADDR:127.0.0.1:8848}
+        username: ${MY12306_NACOS_USERNAME:nacos}
+        password: ${MY12306_NACOS_PASSWORD:nacos}
+    gateway:
+      # 保留完整 /api/... 路径转发，下游控制器无需感知网关路由前缀。
+      routes:
+        - id: user-service
+          uri: lb://my12306-user-service
+          predicates:
+            - Path=/api/user-service/**
+        - id: ticket-service
+          uri: lb://my12306-ticket-service
+          predicates:
+            - Path=/api/ticket-service/**
+        - id: order-service
+          uri: lb://my12306-order-service
+          predicates:
+            - Path=/api/order-service/**
+        - id: pay-service
+          uri: lb://my12306-pay-service
+          predicates:
+            - Path=/api/pay-service/**
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,metrics
+  metrics:
+    distribution:
+      percentiles:
+        http.server.requests: 0.95,0.99
+
+my12306:
+  gateway:
+    internal-token: ${MY12306_GATEWAY_INTERNAL_TOKEN:my12306-local-gateway}

@@ -1,0 +1,232 @@
+package edu.swu.fcj.my12306.biz.ticketservice.service;
+
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import edu.swu.fcj.my12306.biz.ticketservice.common.Result;
+import edu.swu.fcj.my12306.biz.ticketservice.common.Results;
+import edu.swu.fcj.my12306.biz.ticketservice.common.ServiceException;
+import edu.swu.fcj.my12306.biz.ticketservice.common.UserContext;
+import edu.swu.fcj.my12306.biz.ticketservice.common.UserInfoDTO;
+import edu.swu.fcj.my12306.biz.ticketservice.common.cache.RedisCacheHelper;
+import edu.swu.fcj.my12306.biz.ticketservice.common.enums.SeatStatusEnum;
+import edu.swu.fcj.my12306.biz.ticketservice.common.enums.TicketStatusEnum;
+import edu.swu.fcj.my12306.biz.ticketservice.dao.entity.SeatDO;
+import edu.swu.fcj.my12306.biz.ticketservice.dao.entity.TicketDO;
+import edu.swu.fcj.my12306.biz.ticketservice.dao.mapper.SeatMapper;
+import edu.swu.fcj.my12306.biz.ticketservice.dao.mapper.TicketMapper;
+import edu.swu.fcj.my12306.biz.ticketservice.dto.domain.PurchaseTicketPassengerDetailDTO;
+import edu.swu.fcj.my12306.biz.ticketservice.dto.req.PurchaseTicketReqDTO;
+import edu.swu.fcj.my12306.biz.ticketservice.dto.resp.TicketPurchaseRespDTO;
+import edu.swu.fcj.my12306.biz.ticketservice.remote.OrderRemoteService;
+import edu.swu.fcj.my12306.biz.ticketservice.remote.UserRemoteService;
+import edu.swu.fcj.my12306.biz.ticketservice.remote.dto.PassengerActualRespDTO;
+import edu.swu.fcj.my12306.biz.ticketservice.remote.dto.TicketOrderCreateRemoteReqDTO;
+import edu.swu.fcj.my12306.biz.ticketservice.service.handler.ticket.tokenbucket.TicketAvailabilityTokenBucket;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentMatchers;
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.redis.core.StringRedisTemplate;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyMap;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+/**
+ * P1 购票测试：真实 MySQL（票务库）+ Mock Redis/Redisson/Feign（不依赖 Redis、Nacos、用户服务、订单服务）
+ */
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE,
+        properties = {"spring.cloud.nacos.discovery.enabled=false", "spring.cloud.discovery.enabled=false"})
+class PurchaseTicketServiceTest {
+
+    private static final String TEST_USERNAME = "p1-test-user";
+
+    private static final String TEST_USER_ID = "1001";
+
+    private static final String TRAIN_ID = "1";
+
+    private static final String DEPARTURE = "北京南";
+
+    private static final String ARRIVAL = "南京南";
+
+    @Autowired
+    private PurchaseTicketService purchaseTicketService;
+
+    @Autowired
+    private SeatMapper seatMapper;
+
+    @Autowired
+    private TicketMapper ticketMapper;
+
+    @MockBean
+    private RedisCacheHelper redisCacheHelper;
+
+    @MockBean
+    private StringRedisTemplate stringRedisTemplate;
+
+    @MockBean
+    private RedissonClient redissonClient;
+
+    @MockBean
+    private UserRemoteService userRemoteService;
+
+    @MockBean
+    private OrderRemoteService orderRemoteService;
+
+    @MockBean
+    private TicketAvailabilityTokenBucket tokenBucket;
+
+    @BeforeEach
+    void setUp() {
+        UserContext.setUser(UserInfoDTO.builder().userId(TEST_USER_ID).username(TEST_USERNAME).realName("测试用户").build());
+
+        // 缓存：直接把回源结果返回（等价于缓存未命中回源），测试不连接 Redis
+        when(redisCacheHelper.safeGet(anyString(), ArgumentMatchers.<Supplier<String>>any(), anyLong(), any(TimeUnit.class)))
+                .thenAnswer(invocation -> ((Supplier<String>) invocation.getArgument(1)).get());
+
+        RLock lock = mock(RLock.class);
+        when(redissonClient.getLock(anyString())).thenReturn(lock);
+        when(lock.isHeldByCurrentThread()).thenReturn(true);
+        when(tokenBucket.takeToken(anyLong(), anyString(), anyString(), anyMap())).thenReturn(true);
+    }
+
+    @AfterEach
+    void tearDown() {
+        UserContext.removeUser();
+        // 还原被测试修改的座位状态并清理测试车票
+        seatMapper.update(null, Wrappers.lambdaUpdate(SeatDO.class)
+                .eq(SeatDO::getTrainId, Long.valueOf(TRAIN_ID))
+                .eq(SeatDO::getStartStation, DEPARTURE)
+                .eq(SeatDO::getEndStation, ARRIVAL)
+                .eq(SeatDO::getSeatStatus, SeatStatusEnum.LOCKED.getCode())
+                .set(SeatDO::getSeatStatus, SeatStatusEnum.AVAILABLE.getCode()));
+        ticketMapper.delete(Wrappers.lambdaQuery(TicketDO.class).eq(TicketDO::getUsername, TEST_USERNAME));
+    }
+
+    @Test
+    void purchaseTickets_success_locksSeatsWritesTicketsAndReturnsOrderSn() {
+        stubPassengers(101L, 102L);
+        when(orderRemoteService.createTicketOrder(any(TicketOrderCreateRemoteReqDTO.class)))
+                .thenAnswer(invocation -> {
+                    TicketOrderCreateRemoteReqDTO request = invocation.getArgument(0);
+                    return new Result<String>().setCode(Result.SUCCESS_CODE).setData(request.getOrderSn());
+                });
+
+        TicketPurchaseRespDTO response = purchaseTicketService.purchaseTickets(
+                buildRequest(2, List.of(101L, 102L)));
+
+        assertNotNull(response.getOrderSn());
+        assertEquals(2, response.getTicketOrderDetails().size());
+        assertEquals(2, countLockedSeats());
+        assertEquals(2, countTestTickets());
+    }
+
+    @Test
+    void purchaseTickets_notEnoughStock_throwsAndChangesNothing() {
+        stubPassengers(101L);
+
+        // 高铁车次没有无座（13）座位数据：库存校验阶段直接判定无余票
+        ServiceException exception = assertThrows(ServiceException.class,
+                () -> purchaseTicketService.purchaseTickets(buildRequest(13, List.of(101L))));
+        assertEquals("列车站点已无余票", exception.getMessage());
+        assertEquals(0, countTestTickets());
+    }
+
+    @Test
+    void purchaseTickets_orderServiceFailure_compensatesSeatAndTicket() {
+        stubPassengers(101L);
+        when(orderRemoteService.createTicketOrder(any(TicketOrderCreateRemoteReqDTO.class)))
+                .thenReturn(new Result<String>().setCode("500").setMessage("订单服务异常"));
+
+        ServiceException exception = assertThrows(ServiceException.class,
+                () -> purchaseTicketService.purchaseTickets(buildRequest(2, List.of(101L))));
+        assertEquals("订单服务拒绝创建订单，座位已释放", exception.getMessage());
+        // 本地占座事务已经提交，随后由幂等取消回调释放座位并取消车票。
+        assertEquals(0, countLockedSeats());
+        assertEquals(0, countTestTickets());
+        verify(tokenBucket).returnToken(anyLong(), anyString(), anyString(), anyMap());
+    }
+
+    @Test
+    void purchaseTickets_passengerNotBelongToUser_throws() {
+        // 请求 2 位乘车人，但用户服务只返回 1 位
+        stubPassengers(101L);
+
+        ServiceException exception = assertThrows(ServiceException.class,
+                () -> purchaseTicketService.purchaseTickets(buildRequest(2, List.of(101L, 102L))));
+        assertEquals("乘车人不存在或不属于当前用户", exception.getMessage());
+        assertEquals(0, countTestTickets());
+    }
+
+    @Test
+    void purchaseTickets_missingTrainId_throws() {
+        PurchaseTicketReqDTO requestParam = buildRequest(2, List.of(101L));
+        requestParam.setTrainId(null);
+        ServiceException exception = assertThrows(ServiceException.class,
+                () -> purchaseTicketService.purchaseTickets(requestParam));
+        assertEquals("列车标识不能为空", exception.getMessage());
+    }
+
+    private PurchaseTicketReqDTO buildRequest(Integer seatType, List<Long> passengerIds) {
+        PurchaseTicketReqDTO requestParam = new PurchaseTicketReqDTO();
+        requestParam.setTrainId(TRAIN_ID);
+        requestParam.setDeparture(DEPARTURE);
+        requestParam.setArrival(ARRIVAL);
+        List<PurchaseTicketPassengerDetailDTO> passengers = new ArrayList<>();
+        for (Long passengerId : passengerIds) {
+            PurchaseTicketPassengerDetailDTO passenger = new PurchaseTicketPassengerDetailDTO();
+            passenger.setPassengerId(String.valueOf(passengerId));
+            passenger.setSeatType(seatType);
+            passengers.add(passenger);
+        }
+        requestParam.setPassengers(passengers);
+        return requestParam;
+    }
+
+    private void stubPassengers(Long... passengerIds) {
+        List<PassengerActualRespDTO> passengers = new ArrayList<>();
+        for (Long passengerId : passengerIds) {
+            PassengerActualRespDTO passenger = new PassengerActualRespDTO();
+            passenger.setId(String.valueOf(passengerId));
+            passenger.setUsername(TEST_USERNAME);
+            passenger.setRealName("乘车人" + passengerId);
+            passenger.setIdType(1);
+            passenger.setIdCard("11010119900101" + passengerId);
+            passenger.setDiscountType(0);
+            passenger.setPhone("13800000000");
+            passengers.add(passenger);
+        }
+        when(userRemoteService.listPassengerQueryByIds(anyString(), anyList())).thenReturn(Results.success(passengers));
+    }
+
+    private long countLockedSeats() {
+        return seatMapper.selectCount(Wrappers.lambdaQuery(SeatDO.class)
+                .eq(SeatDO::getTrainId, Long.valueOf(TRAIN_ID))
+                .eq(SeatDO::getStartStation, DEPARTURE)
+                .eq(SeatDO::getEndStation, ARRIVAL)
+                .eq(SeatDO::getSeatStatus, SeatStatusEnum.LOCKED.getCode()));
+    }
+
+    private long countTestTickets() {
+        return ticketMapper.selectCount(Wrappers.lambdaQuery(TicketDO.class)
+                .eq(TicketDO::getUsername, TEST_USERNAME)
+                .eq(TicketDO::getTicketStatus, TicketStatusEnum.UNPAID.getCode()));
+    }
+}

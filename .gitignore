@@ -1,0 +1,22 @@
+# 源参考代码：按要求不入库
+/datasource/
+
+# 第三方运行时（RocketMQ 5.5.1 发行包，248MB；其中 rocketmq-all-5.5.1-bin-release.zip 121MB
+# 超过 Gitee 单文件 100MB 上限）
+/tools/
+
+# 文档目录重整时的临时备份（内含密码副本）
+/.doc-reorg-backup-*/
+__pycache__/
+
+# 本地运行时产物
+/jmeter.log
+/worktrees/
+
+# 嵌套 git 仓库的历史备份（为避免 git 把 12306/my12306 当成嵌入式仓库→gitlink，
+# 已把它的 .git 改名为 .git-preserved；改名后 12 次提交仍在磁盘上，可逆）
+**/.git-preserved/
+
+# 说明：12306/my12306/.gitignore 与 docs/5-后续开发规划/baseline/.gitignore
+# 会在各自子树内继续生效，已覆盖构建产物 target/、嵌套运行时日志 12306/my12306/docs/、
+# 压测原始结果 baseline/results/ 与 baseline/logs/，故此处不重复。
