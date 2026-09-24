@@ -144,6 +144,20 @@ function Invoke-MySqlScalar {
     return (& $mysql -uroot -p274226 -N -B -e $Sql | Select-Object -First 1)
 }
 
+# ⚠️ 压测前必须重新生成用户，否则会拿到一堆 401 而不自知。
+#
+# 原因：网关鉴权是【Redis 登录态】而不是无状态 JWT ——
+# gateway-services 的 AuthGlobalFilter 把 token 当作 Redis 的 key 去查
+# （`redisTemplate.opsForValue().get(authorization)`），
+# 所以 token 的有效性由 Redis 里那个会话 key 决定，【JWT 的 exp 不起作用】。
+# 那台 Redis 是远程且与其他项目共用的，会话 key 随时可能不在，
+# 此时 token 看着没过期、压测却全线 401，JMeter 只显示"100% 失败"，很容易误判成业务问题。
+# 跑一次 prepare-users 会重新登录、写入新的会话 key，同时刷新 d1-users.csv。
+#
+# 注：run-baseline.ps1 本来就有这一步，run-d2-benchmark.ps1 之前漏了。
+Write-Host "准备 100 个固定压测用户（刷新 token 与 Redis 登录态）..."
+& "$PSScriptRoot/prepare-users.ps1" -BaseUrl $BaseUrl -Count 100 -OutputFile $userFile
+
 $result = [ordered]@{
     variant = $Variant
     timestamp = (Get-Date).ToString("yyyy-MM-dd HH:mm:ss zzz")
