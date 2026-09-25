@@ -1,6 +1,7 @@
 package edu.swu.fcj.my12306.biz.ticketservice.job;
 
 import edu.swu.fcj.my12306.biz.ticketservice.common.Result;
+import edu.swu.fcj.my12306.biz.ticketservice.common.concurrent.ScheduledLockExecutor;
 import edu.swu.fcj.my12306.biz.ticketservice.common.enums.TicketStatusEnum;
 import edu.swu.fcj.my12306.biz.ticketservice.dao.entity.TicketDO;
 import edu.swu.fcj.my12306.biz.ticketservice.dao.mapper.TicketMapper;
@@ -29,13 +30,15 @@ class TicketOrphanRecoveryJobTest {
     @Mock private TicketMapper ticketMapper;
     @Mock private OrderRemoteService orderRemoteService;
     @Mock private TicketCallbackService ticketCallbackService;
+    /** 本测试只验证单条恢复逻辑（recoverOne），不触发 recover() 的加锁包装，所以这里不会被调用。 */
+    @Mock private ScheduledLockExecutor scheduledLockExecutor;
 
     private TicketOrphanRecoveryJob job;
 
     @BeforeEach
     void setUp() {
         job = new TicketOrphanRecoveryJob(ticketMapper, orderRemoteService,
-                ticketCallbackService, new SimpleMeterRegistry());
+                ticketCallbackService, new SimpleMeterRegistry(), scheduledLockExecutor);
         lenient().when(ticketMapper.selectList(any())).thenReturn(List.of(ticket()));
     }
 

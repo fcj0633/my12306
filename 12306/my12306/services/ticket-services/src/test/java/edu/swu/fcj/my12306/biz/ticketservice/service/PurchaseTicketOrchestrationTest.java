@@ -5,6 +5,7 @@ import edu.swu.fcj.my12306.biz.ticketservice.common.ServiceException;
 import edu.swu.fcj.my12306.biz.ticketservice.common.UserContext;
 import edu.swu.fcj.my12306.biz.ticketservice.common.UserInfoDTO;
 import edu.swu.fcj.my12306.biz.ticketservice.common.cache.RedisCacheHelper;
+import edu.swu.fcj.my12306.biz.ticketservice.common.id.SnowflakeIdGenerator;
 import edu.swu.fcj.my12306.biz.ticketservice.common.chain.AbstractChainContext;
 import edu.swu.fcj.my12306.biz.ticketservice.dto.domain.PurchaseReservationResult;
 import edu.swu.fcj.my12306.biz.ticketservice.dto.domain.PurchaseTicketPassengerDetailDTO;
@@ -57,6 +58,8 @@ class PurchaseTicketOrchestrationTest {
     @Mock private RLock userLock;
     @Mock private RLock seatType0Lock;
     @Mock private RLock seatType2Lock;
+    /** P2-5：orderSn 现在来自这个生成器。测试对 orderSn 只要求非空，固定值即可保持确定性。 */
+    @Mock private SnowflakeIdGenerator snowflakeIdGenerator;
 
     private PurchaseTicketServiceImpl purchaseService;
 
@@ -64,7 +67,8 @@ class PurchaseTicketOrchestrationTest {
     void setUp() {
         purchaseService = new PurchaseTicketServiceImpl(redissonClient, chainContext, tokenBucket, txService,
                 userRemoteService, orderRemoteService, ticketCallbackService, redisCacheHelper,
-                new SimpleMeterRegistry());
+                new SimpleMeterRegistry(), snowflakeIdGenerator);
+        lenient().when(snowflakeIdGenerator.nextId()).thenReturn("1700000000000000001");
         UserContext.setUser(UserInfoDTO.builder().userId("1001").username("tester").build());
         when(tokenBucket.takeToken(eq(1L), anyString(), anyString(), anyMap())).thenReturn(true);
         when(redissonClient.getLock("my12306-ticket-service:lock:purchase_tickets_user_tester_1"))

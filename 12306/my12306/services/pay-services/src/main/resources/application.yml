@@ -44,6 +44,11 @@ management:
         http.server.requests: 0.95,0.99
 
 my12306:
+  # P2-5：雪花 ID 身份显式分配。多实例部署时每个实例必须给不同 workerId。
+  # 默认实现把 PID 混进 workerId 且只有 32 个槽位，同机多实例有约 1/32 概率同号。
+  snowflake:
+    worker-id: ${MY12306_WORKER_ID:1}
+    datacenter-id: ${MY12306_DATACENTER_ID:1}
   pay:
     # 模拟渠道收银台地址（真实项目里由支付渠道返回）
     mock-cashier-url: http://127.0.0.1:9004/api/pay-service/pay/mock-cashier

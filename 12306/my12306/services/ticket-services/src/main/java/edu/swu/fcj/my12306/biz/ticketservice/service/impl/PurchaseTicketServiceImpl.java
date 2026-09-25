@@ -1,12 +1,12 @@
 package edu.swu.fcj.my12306.biz.ticketservice.service.impl;
 
 import cn.hutool.core.collection.CollUtil;
-import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.StrUtil;
 import edu.swu.fcj.my12306.biz.ticketservice.common.Result;
 import edu.swu.fcj.my12306.biz.ticketservice.common.ServiceException;
 import edu.swu.fcj.my12306.biz.ticketservice.common.UserContext;
 import edu.swu.fcj.my12306.biz.ticketservice.common.cache.RedisCacheHelper;
+import edu.swu.fcj.my12306.biz.ticketservice.common.id.SnowflakeIdGenerator;
 import edu.swu.fcj.my12306.biz.ticketservice.common.chain.AbstractChainContext;
 import edu.swu.fcj.my12306.biz.ticketservice.common.constant.TicketChainMarkEnum;
 import edu.swu.fcj.my12306.biz.ticketservice.common.toolkit.CacheUtil;
@@ -26,6 +26,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -60,6 +61,11 @@ public class PurchaseTicketServiceImpl implements PurchaseTicketService {
     private final TicketCallbackService ticketCallbackService;
     private final RedisCacheHelper redisCacheHelper;
     private final MeterRegistry meterRegistry;
+    private final SnowflakeIdGenerator snowflakeIdGenerator;
+
+    /** P2-2：实例标识，用于在日志里区分是哪个 JVM 拿到的锁。 */
+    @Value("${server.port:0}")
+    private int instancePort;
 
     @Override
     public TicketPurchaseRespDTO purchaseTickets(PurchaseTicketReqDTO requestParam) {
@@ -84,7 +90,8 @@ public class PurchaseTicketServiceImpl implements PurchaseTicketService {
         try {
             // Reject invalid passenger ownership before a request can occupy either distributed lock.
             Map<String, PassengerActualRespDTO> passengersById = loadPassengers(requestParam, username);
-            String orderSn = IdUtil.getSnowflakeNextIdStr();
+            // P2-5：orderSn 改为由显式分配 workerId 的生成器产出，不再用 Hutool 的进程级默认单例。
+            String orderSn = snowflakeIdGenerator.nextId();
             PurchaseReservationResult reservation = reserveLocally(
                     requestParam, userId, username, orderSn, passengersById, seatTypeCounts);
             reservationCommitted = true;
@@ -132,6 +139,11 @@ public class PurchaseTicketServiceImpl implements PurchaseTicketService {
                 seatTypeLock.lock();
                 seatTypeLocks.add(seatTypeLock);
             }
+            // P2-2 观测点：两个 ticket 实例必须打印出完全相同的锁 key，否则锁不互斥、会超卖。
+            // 这两个 key 全部由 RedisKeyConstant 的常量 + String.format 构造，不含端口/主机名等实例标识。
+            log.info("[instance={}] 购票锁已获取 userLock={} seatTypeLocks={} orderSn={}",
+                    instancePort, userLock.getName(),
+                    seatTypeLocks.stream().map(RLock::getName).toList(), orderSn);
             lockSample = Timer.start(meterRegistry);
             return purchaseTicketTxService.doPurchaseInTransaction(
                     requestParam, userId, username, orderSn, passengersById);

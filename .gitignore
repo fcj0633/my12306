@@ -17,6 +17,16 @@ __pycache__/
 # 已把它的 .git 改名为 .git-preserved；改名后 12 次提交仍在磁盘上，可逆）
 **/.git-preserved/
 
+# P2 多实例验证的本地产物，整棵子树不入库：
+#   - config/p2-users-*.csv 与下面的 baseline/p2-users*.csv 内含【真实 JWT】，入库即泄露；
+#   - results/ids-*.txt 是生成的原始数据（单个 4.6MB，合计 17.3MB）；
+#   - logs/、tools/out/、p2-service-pids.json 是运行期/编译期产物。
+# 验证方法（含如何重新生成这些数据）见
+# docs/5-后续开发规划/02-结果与结论/P2-开发说明.md 第九节。
+/docs/5-后续开发规划/p2/
+/docs/5-后续开发规划/baseline/p2-users.csv
+/docs/5-后续开发规划/baseline/p2-users2.csv
+
 # 说明：12306/my12306/.gitignore 与 docs/5-后续开发规划/baseline/.gitignore
 # 会在各自子树内继续生效，已覆盖构建产物 target/、嵌套运行时日志 12306/my12306/docs/、
 # 压测原始结果 baseline/results/ 与 baseline/logs/，故此处不重复。

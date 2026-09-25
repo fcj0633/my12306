@@ -10,6 +10,12 @@ public final class OrderRedisKeyConstant {
      */
     public static final String DELAY_CLOSE_ORDER_QUEUE = "my12306-order-service:delay-close-order-queue";
 
+    /**
+     * P2-4 定时任务锁：超时关单兜底扫表。无占位符 —— 全集群同一把锁，
+     * 保证同一轮扫描只有一个实例执行（否则每个实例都会对同一批订单重复发起关单 Feign 调用）。
+     */
+    public static final String LOCK_JOB_ORDER_TIMEOUT_SCAN = "my12306-order-service:lock:job:order-timeout-scan";
+
     private OrderRedisKeyConstant() {
     }
 }

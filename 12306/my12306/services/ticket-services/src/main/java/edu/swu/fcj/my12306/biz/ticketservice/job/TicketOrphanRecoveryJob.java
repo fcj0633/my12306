@@ -2,6 +2,8 @@ package edu.swu.fcj.my12306.biz.ticketservice.job;
 
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import edu.swu.fcj.my12306.biz.ticketservice.common.Result;
+import edu.swu.fcj.my12306.biz.ticketservice.common.concurrent.ScheduledLockExecutor;
+import edu.swu.fcj.my12306.biz.ticketservice.common.constant.RedisKeyConstant;
 import edu.swu.fcj.my12306.biz.ticketservice.common.enums.TicketStatusEnum;
 import edu.swu.fcj.my12306.biz.ticketservice.dao.entity.TicketDO;
 import edu.swu.fcj.my12306.biz.ticketservice.dao.mapper.TicketMapper;
@@ -41,6 +43,7 @@ public class TicketOrphanRecoveryJob {
     private final OrderRemoteService orderRemoteService;
     private final TicketCallbackService ticketCallbackService;
     private final MeterRegistry meterRegistry;
+    private final ScheduledLockExecutor scheduledLockExecutor;
 
     @Value("${my12306.ticket.orphan-age-minutes:25}")
     private long orphanAgeMinutes;
@@ -48,12 +51,29 @@ public class TicketOrphanRecoveryJob {
     @Value("${my12306.ticket.orphan-scan-batch-size:100}")
     private int batchSize;
 
+    /** 同时用于调度间隔与锁租约：租约覆盖整轮，避免同一轮被两个实例各执行一次。 */
+    @Value("${my12306.ticket.orphan-scan-interval-ms:60000}")
+    private long orphanScanIntervalMs;
+
+    /** P2-3：实例标识。加锁前这一行会在两个 JVM 的日志里同时出现；加锁后只出现在认领本轮的那个。 */
+    @Value("${server.port:0}")
+    private int instancePort;
+
     @Scheduled(initialDelayString = "${my12306.ticket.orphan-scan-interval-ms:60000}",
             fixedDelayString = "${my12306.ticket.orphan-scan-interval-ms:60000}")
     public void recover() {
+        scheduledLockExecutor.runWithLock(RedisKeyConstant.LOCK_JOB_TICKET_ORPHAN_RECOVERY,
+                orphanScanIntervalMs, this::doRecover);
+    }
+
+    void doRecover() {
         Date before = Date.from(Instant.now().minus(orphanAgeMinutes, ChronoUnit.MINUTES));
         List<String> orderSns = ticketMapper.selectRecoverableOrderSns(
                 TicketStatusEnum.UNPAID.getCode(), before, batchSize);
+        // 观测点：@Scheduled 是进程内的，不加锁时每个 JVM 都会各跑一次。
+        // 注意：可扫描集合实测为 0 行，所以"是否重复执行"只能靠这行日志判断，不能靠处理单量。
+        log.info("[instance={}] TicketOrphanRecoveryJob.recover 本轮执行，可扫描 orderSn 数={}",
+                instancePort, orderSns.size());
         for (String orderSn : orderSns) {
             recoverOne(orderSn);
         }

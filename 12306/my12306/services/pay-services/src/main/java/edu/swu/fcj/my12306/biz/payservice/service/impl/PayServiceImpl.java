@@ -1,12 +1,12 @@
 package edu.swu.fcj.my12306.biz.payservice.service.impl;
 
 import cn.hutool.core.collection.CollUtil;
-import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import edu.swu.fcj.my12306.biz.payservice.common.Result;
 import edu.swu.fcj.my12306.biz.payservice.common.ServiceException;
 import edu.swu.fcj.my12306.biz.payservice.common.UserContext;
+import edu.swu.fcj.my12306.biz.payservice.common.id.SnowflakeIdGenerator;
 import edu.swu.fcj.my12306.biz.payservice.common.enums.OrderStatusEnum;
 import edu.swu.fcj.my12306.biz.payservice.common.enums.PayChannelEnum;
 import edu.swu.fcj.my12306.biz.payservice.common.enums.PayNotifyStatusEnum;
@@ -68,6 +68,9 @@ public class PayServiceImpl implements PayService {
 
     private final PayChannelFactory payChannelFactory;
 
+    /** P2-5：业务号（paySn / tradeNo）改为显式 workerId，不再用 Hutool 的进程级默认单例。 */
+    private final SnowflakeIdGenerator snowflakeIdGenerator;
+
     /**
      * 通知模式：feign（默认）/ mq。既是回归保险，也是 A/B 压测的开关。
      */
@@ -114,7 +117,8 @@ public class PayServiceImpl implements PayService {
         PayChannelHandler handler = payChannelFactory.getHandler(channel);
         Date now = new Date();
         PayDO payDO = PayDO.builder()
-                .paySn(IdUtil.getSnowflakeNextIdStr())
+                // P2-5：paySn 改为由显式分配 workerId 的生成器产出。
+                .paySn(snowflakeIdGenerator.nextId())
                 .orderSn(orderSn)
                 .userId(orderDetail.getUserId())
                 .username(orderDetail.getUsername())

@@ -1,8 +1,8 @@
 package edu.swu.fcj.my12306.biz.payservice.controller;
 
-import cn.hutool.core.util.IdUtil;
 import edu.swu.fcj.my12306.biz.payservice.common.Result;
 import edu.swu.fcj.my12306.biz.payservice.common.Results;
+import edu.swu.fcj.my12306.biz.payservice.common.id.SnowflakeIdGenerator;
 import edu.swu.fcj.my12306.biz.payservice.dto.req.PayCallbackReqDTO;
 import edu.swu.fcj.my12306.biz.payservice.dto.req.PayCloseReqDTO;
 import edu.swu.fcj.my12306.biz.payservice.dto.req.PayCreateReqDTO;
@@ -26,6 +26,8 @@ import java.util.Date;
 public class PayController {
 
     private final PayService payService;
+
+    private final SnowflakeIdGenerator snowflakeIdGenerator;
 
     /**
      * 创建（或复用）支付单，返回收银台地址
@@ -82,7 +84,8 @@ public class PayController {
         callbackReq.setPaySn(paySn);
         callbackReq.setPayAmount(payInfo.getTotalAmount());
         callbackReq.setChannel(payInfo.getChannel());
-        callbackReq.setTradeNo("MOCK" + IdUtil.getSnowflakeNextIdStr());
+        // P2-5：与其他业务号统一走显式 workerId 的生成器。
+        callbackReq.setTradeNo("MOCK" + snowflakeIdGenerator.nextId());
         callbackReq.setGmtPayment(new Date());
         boolean notified = payService.payCallback(callbackReq);
         return Results.success("模拟支付完成，下游通知结果：" + notified);

@@ -90,6 +90,12 @@ public final class RedisKeyConstant {
      */
     public static final String LOCK_PURCHASE_TICKETS_SEAT_TYPE = "my12306-ticket-service:lock:purchase_tickets_%s_%s";
 
+    /**
+     * P2-4 定时任务锁：孤儿车票恢复。无占位符 —— 全集群同一把锁，
+     * 保证同一轮扫描只有一个实例执行。命名沿用本项目 my12306-&lt;服务&gt;:lock: 的既有约定。
+     */
+    public static final String LOCK_JOB_TICKET_ORPHAN_RECOVERY = "my12306-ticket-service:lock:job:ticket-orphan-recovery";
+
     private RedisKeyConstant() {
     }
 }

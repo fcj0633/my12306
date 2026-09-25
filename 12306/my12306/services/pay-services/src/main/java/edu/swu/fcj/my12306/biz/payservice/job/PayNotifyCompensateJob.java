@@ -1,6 +1,8 @@
 package edu.swu.fcj.my12306.biz.payservice.job;
 
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import edu.swu.fcj.my12306.biz.payservice.common.PayJobLockKeyConstant;
+import edu.swu.fcj.my12306.biz.payservice.common.concurrent.ScheduledLockExecutor;
 import edu.swu.fcj.my12306.biz.payservice.common.enums.PayNotifyStatusEnum;
 import edu.swu.fcj.my12306.biz.payservice.common.enums.PayStatusEnum;
 import edu.swu.fcj.my12306.biz.payservice.dao.entity.PayDO;
@@ -33,11 +35,17 @@ public class PayNotifyCompensateJob {
 
     private final PayService payService;
 
+    private final ScheduledLockExecutor scheduledLockExecutor;
+
     /**
      * 与 {@link #compensate()} 是同一个开关的两种用法，语义必须一致：只有 feign 模式才做补偿。
      */
     @Value("${my12306.pay.notify-mode:feign}")
     private String notifyMode;
+
+    /** 同时用于调度间隔与锁租约：租约覆盖整轮。 */
+    @Value("${my12306.pay.notify-compensate-interval-ms:60000}")
+    private long notifyCompensateIntervalMs;
 
     @Scheduled(fixedDelayString = "${my12306.pay.notify-compensate-interval-ms:60000}")
     public void compensate() {
@@ -54,6 +62,13 @@ public class PayNotifyCompensateJob {
         if ("mq".equalsIgnoreCase(notifyMode)) {
             return;
         }
+        // P2-4：feign 模式下多实例会各扫一遍同一批待补偿支付单，对同一批单重复发起同步 Feign 通知。
+        // 这一段放在抢锁之前判断，是为了不在 mq 模式下刷出无意义的"跳过"日志与计数器。
+        scheduledLockExecutor.runWithLock(PayJobLockKeyConstant.LOCK_JOB_PAY_NOTIFY_COMPENSATE,
+                notifyCompensateIntervalMs, this::doCompensate);
+    }
+
+    void doCompensate() {
         List<PayDO> payList = payMapper.selectList(Wrappers.lambdaQuery(PayDO.class)
                 .eq(PayDO::getStatus, PayStatusEnum.PAID.getCode())
                 .eq(PayDO::getNotifyStatus, PayNotifyStatusEnum.NOT_NOTIFIED.getCode()));

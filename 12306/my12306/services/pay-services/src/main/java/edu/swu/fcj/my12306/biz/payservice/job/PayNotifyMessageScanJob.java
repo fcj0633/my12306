@@ -1,11 +1,14 @@
 package edu.swu.fcj.my12306.biz.payservice.job;
 
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import edu.swu.fcj.my12306.biz.payservice.common.PayJobLockKeyConstant;
+import edu.swu.fcj.my12306.biz.payservice.common.concurrent.ScheduledLockExecutor;
 import edu.swu.fcj.my12306.biz.payservice.common.enums.PayNotifyMessageStatusEnum;
 import edu.swu.fcj.my12306.biz.payservice.dao.entity.PayNotifyMessageDO;
 import edu.swu.fcj.my12306.biz.payservice.dao.mapper.PayNotifyMessageMapper;
 import edu.swu.fcj.my12306.biz.payservice.mq.PayNotifyMessageSender;
 import io.micrometer.core.instrument.MeterRegistry;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -15,6 +18,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * 本地消息表的【补偿】一侧：把还没投递成功的消息捞出来重发。
@@ -42,8 +46,24 @@ public class PayNotifyMessageScanJob {
 
     private final MeterRegistry meterRegistry;
 
+    private final ScheduledLockExecutor scheduledLockExecutor;
+
+    /**
+     * 当前"超过重试上限仍未发出"的消息存量。
+     * <p>
+     * 原实现是 {@code meterRegistry.counter(...).increment(stuck)} —— 累加。这有两个问题：
+     * ① 语义错：Counter 是单调递增的累计量，而这里是"当前存量"，应该用 Gauge；
+     * ② 多实例下每个实例各累加一遍，告警数字直接翻倍。
+     * 加锁只能解决 ②，解决不了 ①，所以两者一起改。
+     */
+    private final AtomicLong stuckCount = new AtomicLong();
+
     @Value("${my12306.pay.notify-message-scan-batch-size:100}")
     private int batchSize;
+
+    /** 同时用于调度间隔与锁租约：两个任务共用同一个间隔，租约也就覆盖整轮。 */
+    @Value("${my12306.pay.notify-message-scan-interval-ms:10000}")
+    private long notifyMessageScanIntervalMs;
 
     /**
      * 重试上限。超过这个次数的消息不再自动重发，只计数并告警 —— 需要人工介入。
@@ -53,9 +73,23 @@ public class PayNotifyMessageScanJob {
     @Value("${my12306.pay.notify-message-max-retry:10}")
     private int maxRetry;
 
+    /** Gauge 只注册一次；任务里只更新 AtomicLong 的值，不重复注册（重复注册会拿到旧的 meter）。 */
+    @PostConstruct
+    void registerStuckGauge() {
+        meterRegistry.gauge("my12306.pay.notify.stuck", stuckCount, AtomicLong::doubleValue);
+    }
+
     @Scheduled(initialDelayString = "${my12306.pay.notify-message-scan-interval-ms:10000}",
             fixedDelayString = "${my12306.pay.notify-message-scan-interval-ms:10000}")
     public void resendPending() {
+        // P2-4：两个实例会各扫到同一批 PENDING 消息并发出去。
+        // 注意本类的"先发后标"（PayNotifyMessageSender.sendPending 先 send 再 markSent）
+        // 并不能防止重复投递，下游幂等能吸收但会多出重复消息 —— 加锁后这类重复发不出去。
+        scheduledLockExecutor.runWithLock(PayJobLockKeyConstant.LOCK_JOB_PAY_NOTIFY_MESSAGE_SCAN,
+                notifyMessageScanIntervalMs, this::doResendPending);
+    }
+
+    void doResendPending() {
         Date now = new Date();
         List<PayNotifyMessageDO> pending = messageMapper.selectList(Wrappers.lambdaQuery(PayNotifyMessageDO.class)
                 .eq(PayNotifyMessageDO::getStatus, PayNotifyMessageStatusEnum.PENDING.getCode())
@@ -85,12 +119,19 @@ public class PayNotifyMessageScanJob {
     @Scheduled(initialDelayString = "${my12306.pay.notify-message-scan-interval-ms:10000}",
             fixedDelayString = "${my12306.pay.notify-message-scan-interval-ms:10000}")
     public void reportStuck() {
+        scheduledLockExecutor.runWithLock(PayJobLockKeyConstant.LOCK_JOB_PAY_NOTIFY_STUCK_REPORT,
+                notifyMessageScanIntervalMs, this::doReportStuck);
+    }
+
+    void doReportStuck() {
         Long stuck = messageMapper.selectCount(Wrappers.lambdaQuery(PayNotifyMessageDO.class)
                 .eq(PayNotifyMessageDO::getStatus, PayNotifyMessageStatusEnum.PENDING.getCode())
                 .ge(PayNotifyMessageDO::getRetryCount, maxRetry));
-        if (stuck != null && stuck > 0) {
-            meterRegistry.counter("my12306.pay.notify.stuck").increment(stuck);
-            log.error("有 {} 条支付结果消息超过重试上限仍未能发出，需要人工介入", stuck);
+        long current = stuck == null ? 0L : stuck;
+        // 设值而非累加：表达的是"当前存量"。
+        stuckCount.set(current);
+        if (current > 0) {
+            log.error("有 {} 条支付结果消息超过重试上限仍未能发出，需要人工介入", current);
         }
     }
 }

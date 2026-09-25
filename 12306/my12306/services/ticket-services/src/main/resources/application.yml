@@ -1,5 +1,7 @@
 server:
-  port: 9002
+  # P2-1：端口可被环境变量覆盖，用于在同一台机器上起第二个 ticket 实例（跨 JVM 验证分布式锁）。
+  # 默认值仍是 9002，不设 MY12306_TICKET_PORT 时行为与 P2 之前完全一致。
+  port: ${MY12306_TICKET_PORT:9002}
 
 spring:
   application:
@@ -63,5 +65,10 @@ my12306:
     notify-mode: ${MY12306_PAY_NOTIFY_MODE:feign}
   rocketmq:
     namesrv-addr: ${MY12306_ROCKETMQ_NAMESRV:127.0.0.1:9876}
+  # P2-5：雪花 ID 身份显式分配。不同实例必须给不同 workerId（9002→1、9012→2），
+  # 否则同机多实例会落到相同的 datacenterId，只剩 32 个 workerId 槽位靠 PID 散列去碰运气。
+  snowflake:
+    worker-id: ${MY12306_WORKER_ID:1}
+    datacenter-id: ${MY12306_DATACENTER_ID:1}
     # 消费者组：与订单侧的 -order-cg 不同，且订阅的 tag 也不同（ORDER_PAID vs PAY_SUCCESS）
     ticket-consumer-group: my12306-pay-notify-ticket-cg
