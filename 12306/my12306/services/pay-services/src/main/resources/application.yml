@@ -56,9 +56,9 @@ my12306:
     notify-compensate-enabled: true
     # 下游通知补偿任务扫描间隔（毫秒）
     notify-compensate-interval-ms: 60000
-    # 通知模式：feign（默认，同步串行调 order/ticket）/ mq（投 PAY_SUCCESS，由下游各自消费）
-    # 既是回归保险，也是 A/B 压测的开关。默认 feign 保证不改配置时行为与 P1 之前一致。
-    notify-mode: ${MY12306_PAY_NOTIFY_MODE:feign}
+    # 通知模式：mq（默认，投 PAY_SUCCESS，由下游链式消费）/ feign（同步串行调 order/ticket）
+    # 三个服务必须使用相同模式；需要回退同步通知时，可统一设置 MY12306_PAY_NOTIFY_MODE=feign。
+    notify-mode: ${MY12306_PAY_NOTIFY_MODE:mq}
     # mq 模式下本地消息表的兜底扫描间隔与批量
     notify-message-scan-interval-ms: 10000
     notify-message-scan-batch-size: 100

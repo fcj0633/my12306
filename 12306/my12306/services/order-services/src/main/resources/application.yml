@@ -52,10 +52,10 @@ my12306:
     # 兜底扫表（补漏）：延迟消息可能丢失，用定时扫描保证"最终一定会关"
     fallback-scan-enabled: true
     fallback-scan-interval-ms: 60000
-  # 通知模式：feign（默认，等价于本服务不参与 MQ）/ mq（本服务消费 PAY_SUCCESS 并发出 ORDER_PAID）
-  # 默认 feign 保证不改配置时行为与 P1 之前一致，这也是 A/B 对照的基准
+  # 通知模式：mq（默认，本服务消费 PAY_SUCCESS 并发出 ORDER_PAID）/ feign（本服务不参与 MQ）
+  # 三个服务必须使用相同模式；需要回退同步通知时，可统一设置 MY12306_PAY_NOTIFY_MODE=feign。
   pay:
-    notify-mode: ${MY12306_PAY_NOTIFY_MODE:feign}
+    notify-mode: ${MY12306_PAY_NOTIFY_MODE:mq}
   rocketmq:
     namesrv-addr: ${MY12306_ROCKETMQ_NAMESRV:127.0.0.1:9876}
     # 消费者组：支付通知扇出到订单。与票务侧的组名不同，这是"一事件多消费者"的基础

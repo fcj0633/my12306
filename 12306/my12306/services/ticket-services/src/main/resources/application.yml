@@ -59,10 +59,10 @@ my12306:
     orphan-scan-interval-ms: ${MY12306_ORPHAN_SCAN_INTERVAL_MS:60000}
     orphan-age-minutes: ${MY12306_ORPHAN_AGE_MINUTES:25}
     orphan-scan-batch-size: ${MY12306_ORPHAN_SCAN_BATCH_SIZE:100}
-  # 通知模式：feign（默认，等价于本服务不参与 MQ）/ mq（本服务消费 ORDER_PAID）
-  # 三个服务必须用同一个值，否则链路会断（例如 pay 投了消息但 ticket 没在听）
+  # 通知模式：mq（默认，本服务消费 ORDER_PAID）/ feign（本服务不参与 MQ）
+  # 三个服务必须使用相同模式；需要回退同步通知时，可统一设置 MY12306_PAY_NOTIFY_MODE=feign。
   pay:
-    notify-mode: ${MY12306_PAY_NOTIFY_MODE:feign}
+    notify-mode: ${MY12306_PAY_NOTIFY_MODE:mq}
   rocketmq:
     namesrv-addr: ${MY12306_ROCKETMQ_NAMESRV:127.0.0.1:9876}
   # P2-5：雪花 ID 身份显式分配。不同实例必须给不同 workerId（9002→1、9012→2），
