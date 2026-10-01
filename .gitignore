@@ -27,6 +27,19 @@ __pycache__/
 /docs/5-后续开发规划/baseline/p2-users.csv
 /docs/5-后续开发规划/baseline/p2-users2.csv
 
+# P1/P2 与并发性能测试的本地产物，不整棵排除（报告与脚本要入库），只排除生成物与含凭据的输入。
+#   results/ 下有 .jtl 原始样本、users.csv（**内含 400 个真实 JWT**）与 targets CSV。
+/docs/5-后续开发规划/04-并发性能测试/results/
+
+# Nacos 启动时若工作目录恰好落在代码树里，它的嵌入式 Derby 与访问日志会落到这里。
+# 实测踩过：在 services/ 目录下启动 Nacos，生成了 derby.log 与 logs/access_log.*.log。
+derby.log
+**/access_log.*.log
+__pycache__/
+
+# start-services.ps1 每次启动都会重写的运行期 PID 快照，属本地产物，不入库。
+/docs/5-后续开发规划/baseline/service-pids.json
+
 # 说明：12306/my12306/.gitignore 与 docs/5-后续开发规划/baseline/.gitignore
 # 会在各自子树内继续生效，已覆盖构建产物 target/、嵌套运行时日志 12306/my12306/docs/、
 # 压测原始结果 baseline/results/ 与 baseline/logs/，故此处不重复。

@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jmeterTestPlan version="1.2" properties="5.0" jmeter="5.6.3">
+  <hashTree>
+    <TestPlan guiclass="TestPlanGui" testclass="TestPlan" testname="并发性能测试 热点超订场景（一次性）">
+      <boolProp name="TestPlan.functional_mode">false</boolProp>
+      <boolProp name="TestPlan.tearDown_on_shutdown">true</boolProp>
+      <boolProp name="TestPlan.serialize_threadgroups">false</boolProp>
+      <elementProp name="TestPlan.user_defined_variables" elementType="Arguments" guiclass="ArgumentsPanel" testclass="Arguments"><collectionProp name="Arguments.arguments"/></elementProp>
+    </TestPlan>
+    <hashTree>
+      <!--
+        S3（同键热点抢订）：每个线程只买一次，跑完即止 —— 用来观察"需求远大于供给"时
+        成功数是否恰等于库存、以及失败落在准入层还是落座层。
+
+        sampler 脚本与 p2-throughput.jmx 相同。这里刻意不做成共享片段：
+        JMeter 计划自包含更省事，代价是改脚本要改两处（两处都带这行注释提醒）。
+
+        ⚠️ scheduler / continue_forever / loops 一律字面量，原因见 p2-throughput.jmx 的注释：
+        boolProp 不做函数求值，用 ${__P(...)} 会静默取到 false。
+      -->
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="购票并发（一次性）">
+        <stringProp name="ThreadGroup.num_threads">${__P(threads,20)}</stringProp>
+        <stringProp name="ThreadGroup.ramp_time">${__P(ramp,1)}</stringProp>
+        <boolProp name="ThreadGroup.same_user_on_next_iteration">true</boolProp>
+        <boolProp name="ThreadGroup.delayedStart">false</boolProp>
+        <boolProp name="ThreadGroup.scheduler">false</boolProp>
+        <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController">
+          <boolProp name="LoopController.continue_forever">false</boolProp>
+          <stringProp name="LoopController.loops">1</stringProp>
+        </elementProp>
+      </ThreadGroup>
+      <hashTree>
+        <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="POST purchase">
+          <stringProp name="scriptLanguage">groovy</stringProp><stringProp name="parameters"/><stringProp name="filename"/><stringProp name="cacheKey">p2-purchase-v1</stringProp>
+          <stringProp name="script"><![CDATA[
+import groovy.json.JsonOutput
+import groovy.json.JsonSlurper
+import java.net.URI
+import java.net.http.HttpClient
+import java.net.http.HttpRequest
+import java.net.http.HttpResponse
+import java.nio.charset.StandardCharsets
+import java.time.Duration
+
+def client = vars.getObject('perf.http.client')
+if (client == null) {
+    client = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(5)).build()
+    vars.putObject('perf.http.client', client)
+}
+
+def lines = props.get('perf.user.lines')
+if (lines == null) {
+    synchronized (props) {
+        lines = props.get('perf.user.lines')
+        if (lines == null) {
+            lines = new File(props.getProperty('userFile')).readLines('UTF-8').drop(1)
+            props.put('perf.user.lines', lines)
+        }
+    }
+}
+def targets = props.get('perf.targets')
+if (targets == null) {
+    synchronized (props) {
+        targets = props.get('perf.targets')
+        if (targets == null) {
+            targets = new File(props.getProperty('targetsFile')).readLines('UTF-8').drop(1)
+            props.put('perf.targets', targets)
+        }
+    }
+}
+
+int tid = ctx.getThreadNum()
+def fields = lines[tid].split(',', 3)
+def target = targets[tid % targets.size()].split(',', 4)
+
+// 站名以 HEX 传入（纯 ASCII），这里解码回 UTF-8。原因见 p2-throughput.jmx 的同名注释。
+def fromHex = { String s ->
+    if (s == null || s.length() == 0) return ''
+    if (s.length() % 2 != 0) return s
+    if (!(s ==~ /(?i)[0-9a-f]+/)) return s
+    try { return new String(s.decodeHex(), 'UTF-8') } catch (Exception ignored) { return s }
+}
+String departure = fromHex(target[2])
+String arrival = fromHex(target[3])
+
+def body = JsonOutput.toJson([
+        trainId: target[0],
+        passengers: [[passengerId: fields[2], seatType: Integer.parseInt(target[1])]],
+        chooseSeats: [],
+        departure: departure, arrival: arrival
+])
+
+def request = HttpRequest.newBuilder(URI.create(props.getProperty('baseUrl', 'http://127.0.0.1:9000') + '/api/ticket-service/ticket/purchase'))
+        .timeout(Duration.ofSeconds(120))
+        .header('Content-Type', 'application/json; charset=utf-8')
+        .header('Authorization', fields[1])
+        .POST(HttpRequest.BodyPublishers.ofString(body, StandardCharsets.UTF_8))
+        .build()
+
+def response = client.send(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8))
+SampleResult.setResponseCode(String.valueOf(response.statusCode()))
+SampleResult.setResponseData(response.body(), 'UTF-8')
+
+String cls
+try {
+    def json = new JsonSlurper().parseText(response.body())
+    if (response.statusCode() == 200 && String.valueOf(json.code) == '0') {
+        cls = 'OK'
+    } else if (response.statusCode() == 401 || response.statusCode() == 403) {
+        cls = 'ERR_AUTH'
+    } else {
+        String msg = String.valueOf(json.message)
+        if (msg.contains('已无余票')) {
+            cls = 'REJECT_ADMISSION'
+        } else if (msg.contains('余票不足')) {
+            cls = 'REJECT_SEAT'
+        } else {
+            cls = 'REJECT_OTHER'
+        }
+    }
+} catch (Exception e) {
+    cls = 'ERR_HTTP_' + response.statusCode()
+}
+SampleResult.setResponseMessage(cls)
+SampleResult.setSuccessful(cls == 'OK')
+          ]]></stringProp>
+        </JSR223Sampler>
+        <hashTree/>
+      </hashTree>
+    </hashTree>
+  </hashTree>
+</jmeterTestPlan>

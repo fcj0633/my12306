@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jmeterTestPlan version="1.2" properties="5.0" jmeter="5.6.3">
+  <hashTree>
+    <TestPlan guiclass="TestPlanGui" testclass="TestPlan" testname="并发性能测试 吞吐场景（duration 模式）">
+      <boolProp name="TestPlan.functional_mode">false</boolProp>
+      <boolProp name="TestPlan.tearDown_on_shutdown">true</boolProp>
+      <boolProp name="TestPlan.serialize_threadgroups">false</boolProp>
+      <elementProp name="TestPlan.user_defined_variables" elementType="Arguments" guiclass="ArgumentsPanel" testclass="Arguments"><collectionProp name="Arguments.arguments"/></elementProp>
+    </TestPlan>
+    <hashTree>
+      <!--
+        用于 S1（单键充足库存）与 S2（多键分散）：按 -Jduration 秒持续压，线程循环下单。
+        目标池按【线程号】从 targets CSV 取；S1 的 CSV 里所有行是同一个池，S2 是多行（41 把不同的锁）。
+
+        ⚠️ 本文件里 scheduler / continue_forever / loops 全部写成【字面量】，不用 ${__P(...)}：
+        JMeter 对 <boolProp> 不做函数求值，写成 ${__P(scheduler,true)} 会被当作字符串解析、
+        实际取到 false，于是 duration 被忽略、线程组无限循环 —— 实测踩过这个坑（一次跑出 127 秒）。
+        一次性超订场景见同目录 p2-hotspot.jmx。
+      -->
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="购票并发（duration）">
+        <stringProp name="ThreadGroup.num_threads">${__P(threads,20)}</stringProp>
+        <stringProp name="ThreadGroup.ramp_time">${__P(ramp,1)}</stringProp>
+        <boolProp name="ThreadGroup.same_user_on_next_iteration">true</boolProp>
+        <boolProp name="ThreadGroup.delayedStart">false</boolProp>
+        <!-- 字面量 true：scheduler 是 boolProp，不能用 __P -->
+        <boolProp name="ThreadGroup.scheduler">true</boolProp>
+        <stringProp name="ThreadGroup.duration">${__P(duration,10)}</stringProp>
+        <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController">
+          <boolProp name="LoopController.continue_forever">true</boolProp>
+          <stringProp name="LoopController.loops">-1</stringProp>
+        </elementProp>
+      </ThreadGroup>
+      <hashTree>
+        <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="POST purchase">
+          <stringProp name="scriptLanguage">groovy</stringProp><stringProp name="parameters"/><stringProp name="filename"/><stringProp name="cacheKey">p2-purchase-v1</stringProp>
+          <stringProp name="script"><![CDATA[
+import groovy.json.JsonOutput
+import groovy.json.JsonSlurper
+import java.net.URI
+import java.net.http.HttpClient
+import java.net.http.HttpRequest
+import java.net.http.HttpResponse
+import java.nio.charset.StandardCharsets
+import java.time.Duration
+
+def client = vars.getObject('perf.http.client')
+if (client == null) {
+    client = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(5)).build()
+    vars.putObject('perf.http.client', client)
+}
+
+def lines = props.get('perf.user.lines')
+if (lines == null) {
+    synchronized (props) {
+        lines = props.get('perf.user.lines')
+        if (lines == null) {
+            lines = new File(props.getProperty('userFile')).readLines('UTF-8').drop(1)
+            props.put('perf.user.lines', lines)
+        }
+    }
+}
+def targets = props.get('perf.targets')
+if (targets == null) {
+    synchronized (props) {
+        targets = props.get('perf.targets')
+        if (targets == null) {
+            targets = new File(props.getProperty('targetsFile')).readLines('UTF-8').drop(1)
+            props.put('perf.targets', targets)
+        }
+    }
+}
+
+int tid = ctx.getThreadNum()
+def fields = lines[tid].split(',', 3)
+// 按线程号取池：线程数 > 池数时环绕，保证每个线程只打一个池
+def target = targets[tid % targets.size()].split(',', 4)
+
+// 站名以 HEX 传入（纯 ASCII），这里解码回 UTF-8。
+// 为什么不在 CSV 里直接写中文：PowerShell 调用原生命令时用控制台编码(GBK)解码其 stdout，
+// 会把 mysql 输出的 UTF-8 中文弄坏，且"南"的末字节会与后面的逗号拼成 GBK 双字节字符、
+// 把分隔逗号吃掉，导致该行少一个字段、target[3] 越界。实测整轮 10 万请求全部 500。
+def fromHex = { String s ->
+    if (s == null || s.length() == 0) return ''
+    if (s.length() % 2 != 0) return s
+    if (!(s ==~ /(?i)[0-9a-f]+/)) return s
+    try { return new String(s.decodeHex(), 'UTF-8') } catch (Exception ignored) { return s }
+}
+String departure = fromHex(target[2])
+String arrival = fromHex(target[3])
+
+def body = JsonOutput.toJson([
+        trainId: target[0],
+        passengers: [[passengerId: fields[2], seatType: Integer.parseInt(target[1])]],
+        chooseSeats: [],
+        departure: departure, arrival: arrival
+])
+
+def request = HttpRequest.newBuilder(URI.create(props.getProperty('baseUrl', 'http://127.0.0.1:9000') + '/api/ticket-service/ticket/purchase'))
+        .timeout(Duration.ofSeconds(120))
+        .header('Content-Type', 'application/json; charset=utf-8')
+        .header('Authorization', fields[1])
+        .POST(HttpRequest.BodyPublishers.ofString(body, StandardCharsets.UTF_8))
+        .build()
+
+def response = client.send(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8))
+SampleResult.setResponseCode(String.valueOf(response.statusCode()))
+SampleResult.setResponseData(response.body(), 'UTF-8')
+
+// 拒绝原因分类后写进 responseMessage，并且【只用 ASCII】：
+//   .jtl 会被 PowerShell 以 GBK 读，中文标记容易变乱码导致聚合脚本匹配不到。
+String cls
+try {
+    def json = new JsonSlurper().parseText(response.body())
+    if (response.statusCode() == 200 && String.valueOf(json.code) == '0') {
+        cls = 'OK'
+    } else if (response.statusCode() == 401 || response.statusCode() == 403) {
+        cls = 'ERR_AUTH'   // 单独标记：否则 token 过期会伪装成业务拒绝
+    } else {
+        String msg = String.valueOf(json.message)
+        if (msg.contains('已无余票')) {
+            cls = 'REJECT_ADMISSION'   // 加锁【前】的无锁 COUNT(*) 读到 0
+        } else if (msg.contains('余票不足')) {
+            cls = 'REJECT_SEAT'        // 加锁【后】条件更新影响行数不符
+        } else {
+            cls = 'REJECT_OTHER'
+        }
+    }
+} catch (Exception e) {
+    cls = 'ERR_HTTP_' + response.statusCode()
+}
+SampleResult.setResponseMessage(cls)
+SampleResult.setSuccessful(cls == 'OK')
+          ]]></stringProp>
+        </JSR223Sampler>
+        <hashTree/>
+      </hashTree>
+    </hashTree>
+  </hashTree>
+</jmeterTestPlan>
