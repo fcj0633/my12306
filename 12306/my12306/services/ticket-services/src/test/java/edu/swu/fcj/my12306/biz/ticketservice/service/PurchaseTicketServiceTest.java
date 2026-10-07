@@ -1,6 +1,7 @@
 package edu.swu.fcj.my12306.biz.ticketservice.service;
 
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import edu.swu.fcj.my12306.biz.ticketservice.common.Result;
 import edu.swu.fcj.my12306.biz.ticketservice.common.Results;
 import edu.swu.fcj.my12306.biz.ticketservice.common.ServiceException;
@@ -30,10 +31,14 @@ import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
@@ -48,12 +53,14 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.doReturn;
 
 /**
  * P1 购票测试：真实 MySQL（票务库）+ Mock Redis/Redisson/Feign（不依赖 Redis、Nacos、用户服务、订单服务）
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE,
-        properties = {"spring.cloud.nacos.discovery.enabled=false", "spring.cloud.discovery.enabled=false"})
+        properties = {"spring.cloud.nacos.discovery.enabled=false", "spring.cloud.discovery.enabled=false",
+                "my12306.pay.notify-mode=feign", "my12306.ticket.orphan-scan-enabled=false"})
 class PurchaseTicketServiceTest {
 
     private static final String TEST_USERNAME = "p1-test-user";
@@ -66,10 +73,17 @@ class PurchaseTicketServiceTest {
 
     private static final String ARRIVAL = "南京南";
 
+    private long lockedBeforeTest;
+
+    private Set<Long> ticketIdsBeforeTest;
+
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
+
     @Autowired
     private PurchaseTicketService purchaseTicketService;
 
-    @Autowired
+    @SpyBean
     private SeatMapper seatMapper;
 
     @Autowired
@@ -95,6 +109,9 @@ class PurchaseTicketServiceTest {
 
     @BeforeEach
     void setUp() {
+        lockedBeforeTest = countLockedSeats();
+        ticketIdsBeforeTest = new HashSet<>(jdbcTemplate.queryForList(
+                "SELECT id FROM t_ticket WHERE username=?", Long.class, TEST_USERNAME));
         UserContext.setUser(UserInfoDTO.builder().userId(TEST_USER_ID).username(TEST_USERNAME).realName("测试用户").build());
 
         // 缓存：直接把回源结果返回（等价于缓存未命中回源），测试不连接 Redis
@@ -110,14 +127,28 @@ class PurchaseTicketServiceTest {
     @AfterEach
     void tearDown() {
         UserContext.removeUser();
-        // 还原被测试修改的座位状态并清理测试车票
-        seatMapper.update(null, Wrappers.lambdaUpdate(SeatDO.class)
-                .eq(SeatDO::getTrainId, Long.valueOf(TRAIN_ID))
-                .eq(SeatDO::getStartStation, DEPARTURE)
-                .eq(SeatDO::getEndStation, ARRIVAL)
-                .eq(SeatDO::getSeatStatus, SeatStatusEnum.LOCKED.getCode())
-                .set(SeatDO::getSeatStatus, SeatStatusEnum.AVAILABLE.getCode()));
-        ticketMapper.delete(Wrappers.lambdaQuery(TicketDO.class).eq(TicketDO::getUsername, TEST_USERNAME));
+        // Include logically deleted tickets, but preserve every historical test row.
+        // Mapper.delete is a logical delete, so it cannot remove test fixtures physically.
+        jdbcTemplate.query("SELECT id,train_id,start_station,end_station,seat_type,carriage_number,seat_number "
+                + "FROM t_ticket WHERE username=?", (rs, rowNum) -> {
+            TicketDO ticket = new TicketDO();
+            ticket.setId(rs.getLong("id"));
+            ticket.setTrainId(rs.getLong("train_id"));
+            ticket.setStartStation(rs.getString("start_station"));
+            ticket.setEndStation(rs.getString("end_station"));
+            ticket.setSeatType(rs.getInt("seat_type"));
+            ticket.setCarriageNumber(rs.getString("carriage_number"));
+            ticket.setSeatNumber(rs.getString("seat_number"));
+            return ticket;
+        }, TEST_USERNAME).stream().filter(ticket -> !ticketIdsBeforeTest.contains(ticket.getId())).forEach(ticket -> {
+            jdbcTemplate.update("UPDATE t_seat SET seat_status=? WHERE train_id=? AND start_station=? "
+                            + "AND end_station=? AND seat_type=? AND carriage_number=? AND seat_number=? "
+                            + "AND seat_status=? AND del_flag=0",
+                    SeatStatusEnum.AVAILABLE.getCode(), ticket.getTrainId(), ticket.getStartStation(),
+                    ticket.getEndStation(), ticket.getSeatType(), ticket.getCarriageNumber(),
+                    ticket.getSeatNumber(), SeatStatusEnum.LOCKED.getCode());
+            jdbcTemplate.update("DELETE FROM t_ticket WHERE id=? AND username=?", ticket.getId(), TEST_USERNAME);
+        });
     }
 
     @Test
@@ -134,7 +165,7 @@ class PurchaseTicketServiceTest {
 
         assertNotNull(response.getOrderSn());
         assertEquals(2, response.getTicketOrderDetails().size());
-        assertEquals(2, countLockedSeats());
+        assertEquals(lockedBeforeTest + 2, countLockedSeats());
         assertEquals(2, countTestTickets());
     }
 
@@ -142,11 +173,43 @@ class PurchaseTicketServiceTest {
     void purchaseTickets_notEnoughStock_throwsAndChangesNothing() {
         stubPassengers(101L);
 
-        // 高铁车次没有无座（13）座位数据：库存校验阶段直接判定无余票
+        // 令牌桶放行后，由事务内选座发现无座（13）没有库存并回滚。
         ServiceException exception = assertThrows(ServiceException.class,
                 () -> purchaseTicketService.purchaseTickets(buildRequest(13, List.of(101L))));
-        assertEquals("列车站点已无余票", exception.getMessage());
+        assertEquals(true, exception.getMessage().contains("站点余票不足"));
         assertEquals(0, countTestTickets());
+        verify(tokenBucket).returnToken(anyLong(), anyString(), anyString(), anyMap());
+    }
+
+    @Test
+    void purchaseTickets_mixedSeatTypes_shortageRollsBackEarlierReservation() {
+        stubPassengers(101L, 102L);
+        long lockedBefore = countLockedSeats();
+        PurchaseTicketReqDTO request = buildRequest(2, List.of(101L, 102L));
+        request.getPassengers().get(1).setSeatType(13);
+
+        ServiceException exception = assertThrows(ServiceException.class,
+                () -> purchaseTicketService.purchaseTickets(request));
+
+        assertEquals(true, exception.getMessage().contains("站点余票不足"));
+        assertEquals(lockedBefore, countLockedSeats());
+        assertEquals(0, countTestTickets());
+        verify(tokenBucket).returnToken(anyLong(), anyString(), anyString(), anyMap());
+    }
+
+    @Test
+    void purchaseTickets_conditionalUpdateLosesRace_rollsBackAndReturnsToken() {
+        stubPassengers(101L);
+        long lockedBefore = countLockedSeats();
+        doReturn(0).when(seatMapper).update(any(SeatDO.class), ArgumentMatchers.<Wrapper<SeatDO>>any());
+
+        ServiceException exception = assertThrows(ServiceException.class,
+                () -> purchaseTicketService.purchaseTickets(buildRequest(2, List.of(101L))));
+
+        assertEquals(true, exception.getMessage().contains("站点余票不足"));
+        assertEquals(lockedBefore, countLockedSeats());
+        assertEquals(0, countTestTickets());
+        verify(tokenBucket).returnToken(anyLong(), anyString(), anyString(), anyMap());
     }
 
     @Test
@@ -159,7 +222,7 @@ class PurchaseTicketServiceTest {
                 () -> purchaseTicketService.purchaseTickets(buildRequest(2, List.of(101L))));
         assertEquals("订单服务拒绝创建订单，座位已释放", exception.getMessage());
         // 本地占座事务已经提交，随后由幂等取消回调释放座位并取消车票。
-        assertEquals(0, countLockedSeats());
+        assertEquals(lockedBeforeTest, countLockedSeats());
         assertEquals(0, countTestTickets());
         verify(tokenBucket).returnToken(anyLong(), anyString(), anyString(), anyMap());
     }
