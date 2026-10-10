@@ -39,7 +39,8 @@ import static org.mockito.Mockito.verify;
  * 然后验证支付回调与取消回调分别把状态推到哪一步。
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE,
-        properties = {"spring.cloud.nacos.discovery.enabled=false", "spring.cloud.discovery.enabled=false"})
+        properties = {"spring.cloud.nacos.discovery.enabled=false", "spring.cloud.discovery.enabled=false",
+                "my12306.pay.notify-mode=feign", "my12306.ticket.orphan-scan-enabled=false"})
 class TicketCallbackServiceTest {
 
     private static final String TEST_USERNAME = "p2-callback-test-user";

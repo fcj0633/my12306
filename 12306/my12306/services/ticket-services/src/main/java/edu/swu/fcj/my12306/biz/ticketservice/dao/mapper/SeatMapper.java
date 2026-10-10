@@ -10,6 +10,13 @@ import java.util.List;
 public interface SeatMapper extends BaseMapper<SeatDO> {
 
     @Select("""
+            SELECT DISTINCT carriage_number FROM t_seat
+            WHERE train_id = #{trainId} AND seat_type = #{seatType} AND del_flag = 0
+            ORDER BY carriage_number
+            """)
+    List<String> selectCarriageNumbers(@Param("trainId") Long trainId, @Param("seatType") Integer seatType);
+
+    @Select("""
             <script>
             SELECT id, carriage_number, seat_number FROM t_seat
             WHERE train_id = #{trainId} AND seat_type = #{seatType}

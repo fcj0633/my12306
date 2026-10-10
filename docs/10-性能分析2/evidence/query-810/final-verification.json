@@ -1,0 +1,29 @@
+{
+  "businessUnchanged": true,
+  "businessAfter": {
+    "seats": {
+      "rows": 27480,
+      "sha256": "385e2a804eb38165f155e971706be5847ddd2c3c448aa72f300016683219b28e"
+    },
+    "tickets": {
+      "rows": 55364,
+      "sha256": "b26f09ede9e2c09a2661bd478357ee6f3f893c81b71a81ed42006855ff8935fd"
+    },
+    "orders": {
+      "rows": 55225,
+      "sha256": "0781bb3b1a46597ea7d86523cf2bece8bf76d6bf79cac8490f13ecc54cff3606"
+    },
+    "items": {
+      "rows": 55225,
+      "sha256": "7fda6025336dc40e2c870c519be778b17e7832cab9d002eda845f6793bca749c"
+    }
+  },
+  "benchCounts": [
+    [
+      "27480",
+      "9600",
+      "810"
+    ]
+  ],
+  "benchFingerprint": "a3fd0ea8cbd504406c3613d40bb6c5258180249666b2ce88a1ab377e855171b5"
+}

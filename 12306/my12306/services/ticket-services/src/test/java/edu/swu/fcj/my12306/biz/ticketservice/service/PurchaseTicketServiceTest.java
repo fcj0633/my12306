@@ -63,6 +63,9 @@ import static org.mockito.Mockito.doReturn;
                 "my12306.pay.notify-mode=feign", "my12306.ticket.orphan-scan-enabled=false"})
 class PurchaseTicketServiceTest {
 
+    @SpyBean
+    private edu.swu.fcj.my12306.biz.ticketservice.service.impl.PurchaseMetadataService metadataService;
+
     private static final String TEST_USERNAME = "p1-test-user";
 
     private static final String TEST_USER_ID = "1001";
@@ -172,6 +175,7 @@ class PurchaseTicketServiceTest {
     @Test
     void purchaseTickets_notEnoughStock_throwsAndChangesNothing() {
         stubPassengers(101L);
+        stubMetadataForInventoryFailure();
 
         // 令牌桶放行后，由事务内选座发现无座（13）没有库存并回滚。
         ServiceException exception = assertThrows(ServiceException.class,
@@ -184,6 +188,7 @@ class PurchaseTicketServiceTest {
     @Test
     void purchaseTickets_mixedSeatTypes_shortageRollsBackEarlierReservation() {
         stubPassengers(101L, 102L);
+        stubMetadataForInventoryFailure();
         long lockedBefore = countLockedSeats();
         PurchaseTicketReqDTO request = buildRequest(2, List.of(101L, 102L));
         request.getPassengers().get(1).setSeatType(13);
@@ -195,6 +200,14 @@ class PurchaseTicketServiceTest {
         assertEquals(lockedBefore, countLockedSeats());
         assertEquals(0, countTestTickets());
         verify(tokenBucket).returnToken(anyLong(), anyString(), anyString(), anyMap());
+    }
+
+    private void stubMetadataForInventoryFailure() {
+        // Type 13 has neither price nor seats. Provide valid request metadata to
+        // isolate the inventory rollback assertion without mutating real prices.
+        doReturn(new edu.swu.fcj.my12306.biz.ticketservice.dto.domain.PurchaseMetadata(
+                "G1", java.time.Instant.EPOCH, java.time.Instant.EPOCH, java.util.Map.of(2, 100, 13, 100)))
+                .when(metadataService).prepare(any());
     }
 
     @Test

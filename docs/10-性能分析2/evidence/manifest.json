@@ -1,0 +1,488 @@
+{
+  "exportedOn": "2026-10-10",
+  "formalRounds": 36,
+  "formalSuccess": 4973,
+  "files": [
+    {
+      "file": "warm/comparison-matrix.json",
+      "source": "docs/10-性能分析2/results/warm-purchase-clean/comparison-matrix.json",
+      "bytes": 2466611,
+      "sha256": "08e27731c021e8c13ac9abcb8de8b8a860d6f1b7ae3d3b6354f49f717de3ca98"
+    },
+    {
+      "file": "warm/warm-summary.json",
+      "source": "docs/10-性能分析2/results/warm-purchase-clean/warm-summary.json",
+      "bytes": 1018716,
+      "sha256": "f026a1600c869caaa58f07038715fd9207953a6f7ff669db5645d38520f6f376"
+    },
+    {
+      "file": "warm/warm-final-verification.json",
+      "source": "docs/10-性能分析2/results/warm-purchase-clean/warm-final-verification.json",
+      "bytes": 83816,
+      "sha256": "913bb690ef6919eb631ad7f1833152ba0029d8044b8530bfaa85cb15b14a7aec"
+    },
+    {
+      "file": "warm/rounds/matrix3-baseline-0-20-0-requests.csv",
+      "source": "docs/10-性能分析2/results/warm-purchase-clean/matrix3-baseline-0-20-0-requests.csv",
+      "bytes": 9102,
+      "sha256": "e6a5f0227e90ad9b0e9c4b5f3f4c6cb3a8c25193c6883afa88148e1cec9b6f64"
+    },
+    {
+      "file": "warm/rounds/matrix3-baseline-0-20-0-cleanup.json",
+      "source": "docs/10-性能分析2/results/warm-purchase-clean/matrix3-baseline-0-20-0-cleanup.json",
+      "bytes": 127,
+      "sha256": "d648f1c752048f4f427b964ca07f080397df6aa83ecca82bc341764ec419a448"
+    },
+    {
+      "file": "warm/rounds/matrix3-baseline-0-20-1-requests.csv",
+      "source": "docs/10-性能分析2/results/warm-purchase-clean/matrix3-baseline-0-20-1-requests.csv",
+      "bytes": 12764,
+      "sha256": "8546cd7b5ffc0493329a0a766ea14aa72510af06fb58395b2e4990d4d7a10b64"
+    },
+    {
+      "file": "warm/rounds/matrix3-baseline-0-20-1-cleanup.json",
+      "source": "docs/10-性能分析2/results/warm-purchase-clean/matrix3-baseline-0-20-1-cleanup.json",
+      "bytes": 129,
+      "sha256": "eec206175b3e32cac9414505783e606889dd6383820b2aa7ce446f015a0efa3c"
+    },
+    {
+      "file": "warm/rounds/matrix3-baseline-0-50-0-requests.csv",
+      "source": "docs/10-性能分析2/results/warm-purchase-clean/matrix3-baseline-0-50-0-requests.csv",
+      "bytes": 10315,
+      "sha256": "7af879f79ab208e464f9f022e8d5fc98b47be0fbf8fe9ac0db7a0d99a6c25e99"
+    },
+    {
+      "file": "warm/rounds/matrix3-baseline-0-50-0-cleanup.json",
+      "source": "docs/10-性能分析2/results/warm-purchase-clean/matrix3-baseline-0-50-0-cleanup.json",
+      "bytes": 127,
+      "sha256": "cd179d8dd977255c36ff23430ca97c901fd183ecf1be7fb0c45ff3ef97f854cc"
+    },
+    {
+      "file": "warm/rounds/matrix3-baseline-0-50-1-requests.csv",
+      "source": "docs/10-性能分析2/results/warm-purchase-clean/matrix3-baseline-0-50-1-requests.csv",
+      "bytes": 18594,
+      "sha256": "d911f22c31ff95b0db94a88d967087cf0fdc1b74a90d9121ebea4d121d7febb3"
+    },
+    {
+      "file": "warm/rounds/matrix3-baseline-0-50-1-cleanup.json",
+      "source": "docs/10-性能分析2/results/warm-purchase-clean/matrix3-baseline-0-50-1-cleanup.json",
+      "bytes": 129,
+      "sha256": "647472c32a4be28ff30175e734999ae14ebdbb469f44ed56f41e924ee8316f74"
+    },
+    {
+      "file": "warm/rounds/matrix3-baseline-0-100-0-requests.csv",
+      "source": "docs/10-性能分析2/results/warm-purchase-clean/matrix3-baseline-0-100-0-requests.csv",
+      "bytes": 18884,
+      "sha256": "98d14a3044327692123e38a62873b663bc11ccbf4d044ded1ab7e145be1738ca"
+    },
+    {
+      "file": "warm/rounds/matrix3-baseline-0-100-0-cleanup.json",
+      "source": "docs/10-性能分析2/results/warm-purchase-clean/matrix3-baseline-0-100-0-cleanup.json",
+      "bytes": 129,
+      "sha256": "d34bef66c574123de950ef8533272306f7352e8c33a88d556da765bdc714015a"
+    },
+    {
+      "file": "warm/rounds/matrix3-baseline-0-100-1-requests.csv",
+      "source": "docs/10-性能分析2/results/warm-purchase-clean/matrix3-baseline-0-100-1-requests.csv",
+      "bytes": 14467,
+      "sha256": "9df8c588c579ec6b7f855881e5c37844518ac453d54ffb653f19f68faaec0187"
+    },
+    {
+      "file": "warm/rounds/matrix3-baseline-0-100-1-cleanup.json",
+      "source": "docs/10-性能分析2/results/warm-purchase-clean/matrix3-baseline-0-100-1-cleanup.json",
+      "bytes": 129,
+      "sha256": "1bf26bb11e4582b0f4fa08225670f32bf85310012747bdce04ee2fff20fc81aa"
+    },
+    {
+      "file": "warm/rounds/matrix3-candidate-0-20-0-requests.csv",
+      "source": "docs/10-性能分析2/results/warm-purchase-clean/matrix3-candidate-0-20-0-requests.csv",
+      "bytes": 11273,
+      "sha256": "b35231d0cbf2e45f213f123d75f4e695f92f582a0898e9a0b2e7e1b1a82aba77"
+    },
+    {
+      "file": "warm/rounds/matrix3-candidate-0-20-0-cleanup.json",
+      "source": "docs/10-性能分析2/results/warm-purchase-clean/matrix3-candidate-0-20-0-cleanup.json",
+      "bytes": 127,
+      "sha256": "1cdc468b3cf34d6ff4dbc3fddaf4381613bf6ee16fc2626ea64070de107ee727"
+    },
+    {
+      "file": "warm/rounds/matrix3-candidate-0-20-1-requests.csv",
+      "source": "docs/10-性能分析2/results/warm-purchase-clean/matrix3-candidate-0-20-1-requests.csv",
+      "bytes": 15858,
+      "sha256": "b11f05140adb4d56169f920b1f487e164a8544a2dd10ec7ec253121cac64daad"
+    },
+    {
+      "file": "warm/rounds/matrix3-candidate-0-20-1-cleanup.json",
+      "source": "docs/10-性能分析2/results/warm-purchase-clean/matrix3-candidate-0-20-1-cleanup.json",
+      "bytes": 129,
+      "sha256": "baf7d3c2eaeddc2b1de868f773fee19d1644bbc3588ce8d0e3c27e0114130447"
+    },
+    {
+      "file": "warm/rounds/matrix3-candidate-0-50-0-requests.csv",
+      "source": "docs/10-性能分析2/results/warm-purchase-clean/matrix3-candidate-0-50-0-requests.csv",
+      "bytes": 13711,
+      "sha256": "c2330d589e78ff3f269b0627f3ef0ca6415d5a0704f3c020ca94c2b9819fbcd1"
+    },
+    {
+      "file": "warm/rounds/matrix3-candidate-0-50-0-cleanup.json",
+      "source": "docs/10-性能分析2/results/warm-purchase-clean/matrix3-candidate-0-50-0-cleanup.json",
+      "bytes": 129,
+      "sha256": "52d5dfa32032f2a908813b6c428fec29f0b193a0fd456af73b02f2b76ebabe88"
+    },
+    {
+      "file": "warm/rounds/matrix3-candidate-0-50-1-requests.csv",
+      "source": "docs/10-性能分析2/results/warm-purchase-clean/matrix3-candidate-0-50-1-requests.csv",
+      "bytes": 19135,
+      "sha256": "14d0ce31f7605f3d6122949f055dddb8bbe4364bd672f9144b03dabe1643d298"
+    },
+    {
+      "file": "warm/rounds/matrix3-candidate-0-50-1-cleanup.json",
+      "source": "docs/10-性能分析2/results/warm-purchase-clean/matrix3-candidate-0-50-1-cleanup.json",
+      "bytes": 129,
+      "sha256": "2afa729f69fa74087e0de959579780dc66f266efde2cb4e0de035ea380168242"
+    },
+    {
+      "file": "warm/rounds/matrix3-candidate-0-100-0-requests.csv",
+      "source": "docs/10-性能分析2/results/warm-purchase-clean/matrix3-candidate-0-100-0-requests.csv",
+      "bytes": 25962,
+      "sha256": "f0a02eee766dfec213edaeda269a4c081a6b45090cf79161492ca290c316ed0d"
+    },
+    {
+      "file": "warm/rounds/matrix3-candidate-0-100-0-cleanup.json",
+      "source": "docs/10-性能分析2/results/warm-purchase-clean/matrix3-candidate-0-100-0-cleanup.json",
+      "bytes": 129,
+      "sha256": "84e8deb89559c7c3112bf53d6b4a47fa73bad3186a1bf470504dc5641c6f1c25"
+    },
+    {
+      "file": "warm/rounds/matrix3-candidate-0-100-1-requests.csv",
+      "source": "docs/10-性能分析2/results/warm-purchase-clean/matrix3-candidate-0-100-1-requests.csv",
+      "bytes": 23290,
+      "sha256": "232896ac76d679b22411a02450134e473f20ce5009dbef26f72baff8503ff997"
+    },
+    {
+      "file": "warm/rounds/matrix3-candidate-0-100-1-cleanup.json",
+      "source": "docs/10-性能分析2/results/warm-purchase-clean/matrix3-candidate-0-100-1-cleanup.json",
+      "bytes": 129,
+      "sha256": "caa7631ded850e50ce0bf338fbb9f2056d97c5040d369913209df6daf3b63e12"
+    },
+    {
+      "file": "warm/rounds/matrix3-baseline-1-20-0-requests.csv",
+      "source": "docs/10-性能分析2/results/warm-purchase-clean/matrix3-baseline-1-20-0-requests.csv",
+      "bytes": 12355,
+      "sha256": "cc9a0284b57efcff5904c6f88099d649bc403c1893d55dcfbb0bae34cc8458e2"
+    },
+    {
+      "file": "warm/rounds/matrix3-baseline-1-20-0-cleanup.json",
+      "source": "docs/10-性能分析2/results/warm-purchase-clean/matrix3-baseline-1-20-0-cleanup.json",
+      "bytes": 127,
+      "sha256": "16be9f07dc301fba9dd763bec262465df7a7fed45148d2a5bca43496dffa42f0"
+    },
+    {
+      "file": "warm/rounds/matrix3-baseline-1-20-1-requests.csv",
+      "source": "docs/10-性能分析2/results/warm-purchase-clean/matrix3-baseline-1-20-1-requests.csv",
+      "bytes": 13386,
+      "sha256": "97d25d8bea8c6324fbc429deaff384180eab58f94548adff181a72c237d80105"
+    },
+    {
+      "file": "warm/rounds/matrix3-baseline-1-20-1-cleanup.json",
+      "source": "docs/10-性能分析2/results/warm-purchase-clean/matrix3-baseline-1-20-1-cleanup.json",
+      "bytes": 129,
+      "sha256": "52d5dfa32032f2a908813b6c428fec29f0b193a0fd456af73b02f2b76ebabe88"
+    },
+    {
+      "file": "warm/rounds/matrix3-baseline-1-50-0-requests.csv",
+      "source": "docs/10-性能分析2/results/warm-purchase-clean/matrix3-baseline-1-50-0-requests.csv",
+      "bytes": 8807,
+      "sha256": "1b5f3e223b71c784ba0cfff06a34e1db876e7d382fac63667dafb870c711215c"
+    },
+    {
+      "file": "warm/rounds/matrix3-baseline-1-50-0-cleanup.json",
+      "source": "docs/10-性能分析2/results/warm-purchase-clean/matrix3-baseline-1-50-0-cleanup.json",
+      "bytes": 127,
+      "sha256": "fb0a6be5aff00be215037a1af96625b81cf6bbb357cf81f44c5ad96d428ff242"
+    },
+    {
+      "file": "warm/rounds/matrix3-baseline-1-50-1-requests.csv",
+      "source": "docs/10-性能分析2/results/warm-purchase-clean/matrix3-baseline-1-50-1-requests.csv",
+      "bytes": 16313,
+      "sha256": "2b24c4358ab8f077ee01aed3e29aba2d789011b91b499f0a3bccfbbfbfe35014"
+    },
+    {
+      "file": "warm/rounds/matrix3-baseline-1-50-1-cleanup.json",
+      "source": "docs/10-性能分析2/results/warm-purchase-clean/matrix3-baseline-1-50-1-cleanup.json",
+      "bytes": 129,
+      "sha256": "c7e02f3d5cd99a470ba0a820c1ee24ce8ae1d2c3738294a98042cb740ff0cf12"
+    },
+    {
+      "file": "warm/rounds/matrix3-baseline-1-100-0-requests.csv",
+      "source": "docs/10-性能分析2/results/warm-purchase-clean/matrix3-baseline-1-100-0-requests.csv",
+      "bytes": 22754,
+      "sha256": "dfa674f5c37f213b9b3a17a48a8f5ed7d63bf4fa181c7db67fae1da7246ff22e"
+    },
+    {
+      "file": "warm/rounds/matrix3-baseline-1-100-0-cleanup.json",
+      "source": "docs/10-性能分析2/results/warm-purchase-clean/matrix3-baseline-1-100-0-cleanup.json",
+      "bytes": 129,
+      "sha256": "165faedc9866074882a5f5afdf32a11d41c2990a4a7f63b1708d797d71c902e0"
+    },
+    {
+      "file": "warm/rounds/matrix3-baseline-1-100-1-requests.csv",
+      "source": "docs/10-性能分析2/results/warm-purchase-clean/matrix3-baseline-1-100-1-requests.csv",
+      "bytes": 26169,
+      "sha256": "6f59631bf1d5bbb1f1407a5ca270e274bb3e043efc6ad05c2a19e4228031a640"
+    },
+    {
+      "file": "warm/rounds/matrix3-baseline-1-100-1-cleanup.json",
+      "source": "docs/10-性能分析2/results/warm-purchase-clean/matrix3-baseline-1-100-1-cleanup.json",
+      "bytes": 129,
+      "sha256": "0aed8a17ddff9fb2e2e52ec0d14ebc2d0fb407ab6b41fcf556602187932c73dd"
+    },
+    {
+      "file": "warm/rounds/matrix3-candidate-1-20-0-requests.csv",
+      "source": "docs/10-性能分析2/results/warm-purchase-clean/matrix3-candidate-1-20-0-requests.csv",
+      "bytes": 14587,
+      "sha256": "b72ecba74611e2338a40130adc755d2d130c2f17b6bf925d2a3cfb7ae6dba30e"
+    },
+    {
+      "file": "warm/rounds/matrix3-candidate-1-20-0-cleanup.json",
+      "source": "docs/10-性能分析2/results/warm-purchase-clean/matrix3-candidate-1-20-0-cleanup.json",
+      "bytes": 129,
+      "sha256": "91e153e4d99302c96481aa1ad401ee6e286de9c81beb84609786f76fb8850c93"
+    },
+    {
+      "file": "warm/rounds/matrix3-candidate-1-20-1-requests.csv",
+      "source": "docs/10-性能分析2/results/warm-purchase-clean/matrix3-candidate-1-20-1-requests.csv",
+      "bytes": 11650,
+      "sha256": "66a93c94f64280b37a218289fe4c6f70d0e26d89d8ed9b48b291b0b70d82c12a"
+    },
+    {
+      "file": "warm/rounds/matrix3-candidate-1-20-1-cleanup.json",
+      "source": "docs/10-性能分析2/results/warm-purchase-clean/matrix3-candidate-1-20-1-cleanup.json",
+      "bytes": 127,
+      "sha256": "2e7afa8d474dcd9d48e6f762856bf615400ed119dd957d32d3b7d2ea404b73b4"
+    },
+    {
+      "file": "warm/rounds/matrix3-candidate-1-50-0-requests.csv",
+      "source": "docs/10-性能分析2/results/warm-purchase-clean/matrix3-candidate-1-50-0-requests.csv",
+      "bytes": 21221,
+      "sha256": "ee3f404f9eda77b4c3aaa424c17ccdc8879c963573d41125e9fa5abded123aff"
+    },
+    {
+      "file": "warm/rounds/matrix3-candidate-1-50-0-cleanup.json",
+      "source": "docs/10-性能分析2/results/warm-purchase-clean/matrix3-candidate-1-50-0-cleanup.json",
+      "bytes": 129,
+      "sha256": "4d6c76f36930827caa3f00f03a3df4c6481ba1e90a2c3cde15df06ee1f8ad5ca"
+    },
+    {
+      "file": "warm/rounds/matrix3-candidate-1-50-1-requests.csv",
+      "source": "docs/10-性能分析2/results/warm-purchase-clean/matrix3-candidate-1-50-1-requests.csv",
+      "bytes": 19786,
+      "sha256": "4ab28ba9ce980eea2df1e6f7beeff1cf3e0c9f2a80bb8fdf29f70eff3c90f49a"
+    },
+    {
+      "file": "warm/rounds/matrix3-candidate-1-50-1-cleanup.json",
+      "source": "docs/10-性能分析2/results/warm-purchase-clean/matrix3-candidate-1-50-1-cleanup.json",
+      "bytes": 129,
+      "sha256": "f56fc388b2e5a82d5922997f437963f96660ba0e046e89fa4b86ff2fa8777984"
+    },
+    {
+      "file": "warm/rounds/matrix3-candidate-1-100-0-requests.csv",
+      "source": "docs/10-性能分析2/results/warm-purchase-clean/matrix3-candidate-1-100-0-requests.csv",
+      "bytes": 17825,
+      "sha256": "c47ab3cd1cd7bbc245c101cb20673d1d854c5b69393f7f743b241b59df3854d6"
+    },
+    {
+      "file": "warm/rounds/matrix3-candidate-1-100-0-cleanup.json",
+      "source": "docs/10-性能分析2/results/warm-purchase-clean/matrix3-candidate-1-100-0-cleanup.json",
+      "bytes": 129,
+      "sha256": "9cbc629826dfd8e8fa3fc8c0dc8495ea9d397898af6db3412c4b65338cc60908"
+    },
+    {
+      "file": "warm/rounds/matrix3-candidate-1-100-1-requests.csv",
+      "source": "docs/10-性能分析2/results/warm-purchase-clean/matrix3-candidate-1-100-1-requests.csv",
+      "bytes": 28038,
+      "sha256": "2d9720f7f6c3bd70c9b3692a5e1eaa5509f3ed8e15f50cdd29859acf4463cc8e"
+    },
+    {
+      "file": "warm/rounds/matrix3-candidate-1-100-1-cleanup.json",
+      "source": "docs/10-性能分析2/results/warm-purchase-clean/matrix3-candidate-1-100-1-cleanup.json",
+      "bytes": 129,
+      "sha256": "82c130ca5fa95d1516a71c3c3b165aaa5f7ccb084a4d9b5b6cbe233d337e3ef0"
+    },
+    {
+      "file": "warm/rounds/matrix3-baseline-2-20-0-requests.csv",
+      "source": "docs/10-性能分析2/results/warm-purchase-clean/matrix3-baseline-2-20-0-requests.csv",
+      "bytes": 16131,
+      "sha256": "70f27b07f938e87ab23e1d42b55971affd23c32f072de0e94b87a1ea1555f692"
+    },
+    {
+      "file": "warm/rounds/matrix3-baseline-2-20-0-cleanup.json",
+      "source": "docs/10-性能分析2/results/warm-purchase-clean/matrix3-baseline-2-20-0-cleanup.json",
+      "bytes": 129,
+      "sha256": "c7e02f3d5cd99a470ba0a820c1ee24ce8ae1d2c3738294a98042cb740ff0cf12"
+    },
+    {
+      "file": "warm/rounds/matrix3-baseline-2-20-1-requests.csv",
+      "source": "docs/10-性能分析2/results/warm-purchase-clean/matrix3-baseline-2-20-1-requests.csv",
+      "bytes": 15601,
+      "sha256": "53d8293f0006ac60fd365b1f31872758ab039ff6f3a149f77f466e4b3dff6354"
+    },
+    {
+      "file": "warm/rounds/matrix3-baseline-2-20-1-cleanup.json",
+      "source": "docs/10-性能分析2/results/warm-purchase-clean/matrix3-baseline-2-20-1-cleanup.json",
+      "bytes": 129,
+      "sha256": "baf7d3c2eaeddc2b1de868f773fee19d1644bbc3588ce8d0e3c27e0114130447"
+    },
+    {
+      "file": "warm/rounds/matrix3-baseline-2-50-0-requests.csv",
+      "source": "docs/10-性能分析2/results/warm-purchase-clean/matrix3-baseline-2-50-0-requests.csv",
+      "bytes": 17052,
+      "sha256": "1e0f7d9a23c8a2126c57e9f61c808edfa4819c8ed7f4cbf506f3dc765da446f2"
+    },
+    {
+      "file": "warm/rounds/matrix3-baseline-2-50-0-cleanup.json",
+      "source": "docs/10-性能分析2/results/warm-purchase-clean/matrix3-baseline-2-50-0-cleanup.json",
+      "bytes": 129,
+      "sha256": "9aa8baef84fcf89d89fa7e4fb351132f820ad613bac8145e17c9e2f41d9b8498"
+    },
+    {
+      "file": "warm/rounds/matrix3-baseline-2-50-1-requests.csv",
+      "source": "docs/10-性能分析2/results/warm-purchase-clean/matrix3-baseline-2-50-1-requests.csv",
+      "bytes": 21109,
+      "sha256": "de1ae3f28b6a929453be23756459c069785099653a08ad7607bcbf65e171eea9"
+    },
+    {
+      "file": "warm/rounds/matrix3-baseline-2-50-1-cleanup.json",
+      "source": "docs/10-性能分析2/results/warm-purchase-clean/matrix3-baseline-2-50-1-cleanup.json",
+      "bytes": 129,
+      "sha256": "53cbbbfd14f4802f4d5b1bb2c2b4a6aee130895072a632b49bc7d4ec2b3dc19a"
+    },
+    {
+      "file": "warm/rounds/matrix3-baseline-2-100-0-requests.csv",
+      "source": "docs/10-性能分析2/results/warm-purchase-clean/matrix3-baseline-2-100-0-requests.csv",
+      "bytes": 24885,
+      "sha256": "47389e91cb89d00835bb5159a6a8e987e31ffe1d14eaf7ad286fdfeef06c9361"
+    },
+    {
+      "file": "warm/rounds/matrix3-baseline-2-100-0-cleanup.json",
+      "source": "docs/10-性能分析2/results/warm-purchase-clean/matrix3-baseline-2-100-0-cleanup.json",
+      "bytes": 129,
+      "sha256": "e2b6be40ed89a40cf1180978fddf6221942c9b9a854f31b141d097862e601d9c"
+    },
+    {
+      "file": "warm/rounds/matrix3-baseline-2-100-1-requests.csv",
+      "source": "docs/10-性能分析2/results/warm-purchase-clean/matrix3-baseline-2-100-1-requests.csv",
+      "bytes": 28498,
+      "sha256": "11a558cee621d1fc43b7535edda2ef0dde9b47d09b6e6130f0bd19245ed7e9d6"
+    },
+    {
+      "file": "warm/rounds/matrix3-baseline-2-100-1-cleanup.json",
+      "source": "docs/10-性能分析2/results/warm-purchase-clean/matrix3-baseline-2-100-1-cleanup.json",
+      "bytes": 129,
+      "sha256": "4677af1ed5663618da3550622ec80d3cfc06d2deff706adfad4307255135841d"
+    },
+    {
+      "file": "warm/rounds/matrix3-candidate-2-20-0-requests.csv",
+      "source": "docs/10-性能分析2/results/warm-purchase-clean/matrix3-candidate-2-20-0-requests.csv",
+      "bytes": 15982,
+      "sha256": "6b0c9b6d2e038e35bf1ff04808c94be13d10564ded7044111c4cd0e9efd3feed"
+    },
+    {
+      "file": "warm/rounds/matrix3-candidate-2-20-0-cleanup.json",
+      "source": "docs/10-性能分析2/results/warm-purchase-clean/matrix3-candidate-2-20-0-cleanup.json",
+      "bytes": 129,
+      "sha256": "2cde30d5ba35904264a0c139b969f78cc348bb8d8a9969f06c9471280da7e66d"
+    },
+    {
+      "file": "warm/rounds/matrix3-candidate-2-20-1-requests.csv",
+      "source": "docs/10-性能分析2/results/warm-purchase-clean/matrix3-candidate-2-20-1-requests.csv",
+      "bytes": 17123,
+      "sha256": "e2b3340c944279842bf934aadc7d8ff4bf8985a868f8ec4ba1fac378b7bdebf4"
+    },
+    {
+      "file": "warm/rounds/matrix3-candidate-2-20-1-cleanup.json",
+      "source": "docs/10-性能分析2/results/warm-purchase-clean/matrix3-candidate-2-20-1-cleanup.json",
+      "bytes": 129,
+      "sha256": "9aa8baef84fcf89d89fa7e4fb351132f820ad613bac8145e17c9e2f41d9b8498"
+    },
+    {
+      "file": "warm/rounds/matrix3-candidate-2-50-0-requests.csv",
+      "source": "docs/10-性能分析2/results/warm-purchase-clean/matrix3-candidate-2-50-0-requests.csv",
+      "bytes": 17711,
+      "sha256": "169c233cf163edd4c7789b30d5c96026dc7bb5aa5f2d5659538c225c30df79ef"
+    },
+    {
+      "file": "warm/rounds/matrix3-candidate-2-50-0-cleanup.json",
+      "source": "docs/10-性能分析2/results/warm-purchase-clean/matrix3-candidate-2-50-0-cleanup.json",
+      "bytes": 129,
+      "sha256": "e202803ebdc3353126e979c1c8303481f0f258a4ecc0d28ea5692b9817bd9e89"
+    },
+    {
+      "file": "warm/rounds/matrix3-candidate-2-50-1-requests.csv",
+      "source": "docs/10-性能分析2/results/warm-purchase-clean/matrix3-candidate-2-50-1-requests.csv",
+      "bytes": 18361,
+      "sha256": "08c14a15f832432c86f0c532b8e22a8f91853b0682e39d1e734a4aae37d391ef"
+    },
+    {
+      "file": "warm/rounds/matrix3-candidate-2-50-1-cleanup.json",
+      "source": "docs/10-性能分析2/results/warm-purchase-clean/matrix3-candidate-2-50-1-cleanup.json",
+      "bytes": 129,
+      "sha256": "3cff00ccaa13682120d7d5c47878aa83e36efea5bead2bc11f2d8aa053f38a5a"
+    },
+    {
+      "file": "warm/rounds/matrix3-candidate-2-100-0-requests.csv",
+      "source": "docs/10-性能分析2/results/warm-purchase-clean/matrix3-candidate-2-100-0-requests.csv",
+      "bytes": 25821,
+      "sha256": "d2d267fef316565fd4971e985ab707594d2b59d34758f37eb86790e78b57077e"
+    },
+    {
+      "file": "warm/rounds/matrix3-candidate-2-100-0-cleanup.json",
+      "source": "docs/10-性能分析2/results/warm-purchase-clean/matrix3-candidate-2-100-0-cleanup.json",
+      "bytes": 129,
+      "sha256": "fe7946d1dd938ab9a9ca6660f6fbfda2779515c7ed0f97fb1d6ea3e2eaafa347"
+    },
+    {
+      "file": "warm/rounds/matrix3-candidate-2-100-1-requests.csv",
+      "source": "docs/10-性能分析2/results/warm-purchase-clean/matrix3-candidate-2-100-1-requests.csv",
+      "bytes": 21964,
+      "sha256": "acee0097d6ff48f0bc3e086f92cc63ce54ec211b4c6bfc9af5e8dd57f99eb3e8"
+    },
+    {
+      "file": "warm/rounds/matrix3-candidate-2-100-1-cleanup.json",
+      "source": "docs/10-性能分析2/results/warm-purchase-clean/matrix3-candidate-2-100-1-cleanup.json",
+      "bytes": 129,
+      "sha256": "4c983240f4f488a9fceb2248f9794a3c6735ee5faf0e028b2caac8cf36aebb5e"
+    },
+    {
+      "file": "query-810/benchmark.json",
+      "source": "docs/5-后续开发规划/04-并发性能测试/results/seat-allocation-810/benchmark.json",
+      "bytes": 143675,
+      "sha256": "00ad6393df66165ceff70f568773852d76b7709e9f517ff7cb2b2247ae2aedc0"
+    },
+    {
+      "file": "query-810/source-metadata.json",
+      "source": "docs/5-后续开发规划/04-并发性能测试/results/seat-allocation-810/source-metadata.json",
+      "bytes": 818,
+      "sha256": "35a99fc36d473a5e40b54851926bb6f5bc6eee3fae288e68c7118bf3fa021030"
+    },
+    {
+      "file": "query-810/final-verification.json",
+      "source": "docs/5-后续开发规划/04-并发性能测试/results/seat-allocation-810/final-verification.json",
+      "bytes": 758,
+      "sha256": "b5448e48ccfdf70dac59aae0c74adb5096bcedab122937456f39f0a94996faa8"
+    },
+    {
+      "file": "query-810/schema.sql",
+      "source": "docs/5-后续开发规划/04-并发性能测试/results/seat-allocation-810/schema.sql",
+      "bytes": 989,
+      "sha256": "7dd87464fb7e957a2b62349c9abf1fe8d5c3f155ad44fd6b90fcd7b1eda015be"
+    },
+    {
+      "file": "query-810/business-natural-plan.txt",
+      "source": "docs/5-后续开发规划/04-并发性能测试/results/seat-allocation-810/business-natural-plan.txt",
+      "bytes": 310,
+      "sha256": "9696a7eb846b5f2985557e7fae75a0a95e500d672596f0b2dace062b330e8b33"
+    }
+  ],
+  "omitted": "Session files, full service logs, JARs, raw traces and exploratory runs remain local and ignored."
+}

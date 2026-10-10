@@ -125,4 +125,21 @@ class SeatAllocatorTest {
             for (int n = 1; n <= 8; n++) assertEquals(legacy(n), allocate(n), "trial=" + trial + ", n=" + n);
         }
     }
+
+    @Test void carriageSelectionHandlesRandomFragmentationWithoutPartialResults() {
+        Random random = new Random(20261009);
+        for (int trial = 0; trial < 200; trial++) {
+            int[] counts = {random.nextInt(8), random.nextInt(8), random.nextInt(8)};
+            fixture(counts);
+            for (int c = 0; c < counts.length; c++) {
+                String carriage = String.format("%02d", c + 1);
+                for (int n = 1; n <= 5; n++) {
+                    List<SeatDO> result = allocator.allocateInCarriage(1L,"北京南","宁波",2,carriage,n);
+                    assertEquals(counts[c] >= n ? n : 0, result.size());
+                    assertTrue(result.stream().allMatch(seat -> carriage.equals(seat.getCarriageNumber())));
+                    assertEquals(result.size(), result.stream().map(SeatDO::getId).distinct().count());
+                }
+            }
+        }
+    }
 }

@@ -102,7 +102,15 @@ def request = HttpRequest.newBuilder(URI.create(props.getProperty('baseUrl', 'ht
         .POST(HttpRequest.BodyPublishers.ofString(body, StandardCharsets.UTF_8))
         .build()
 
+long transportStart = SampleResult.currentTimeInMillis()
 def response = client.send(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8))
+// Current-HEAD harness pauses setup; also exclude compilation before script entry.
+// Keep historical plan timing unchanged unless that harness supplied its shared client.
+if (props.get('current.client') != null) {
+    SampleResult.setIdleTime(transportStart - SampleResult.getStartTime())
+    SampleResult.setTimeStamp(transportStart)
+    SampleResult.setSampleLabel('POST purchase [HTTP timing v2]')
+}
 SampleResult.setResponseCode(String.valueOf(response.statusCode()))
 SampleResult.setResponseData(response.body(), 'UTF-8')
 

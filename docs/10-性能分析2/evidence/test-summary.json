@@ -1,0 +1,131 @@
+[
+  {
+    "name": "CarriageDirectoryTest",
+    "tests": 1,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "cases": [
+      "directoryCachesOnlySortedCoordinatesAndRotationIsThreadSafe"
+    ],
+    "sourceSha256": "182e2aa86204b7f6a82794c742415f0e78cc8dbfb0388d88a77fdab6bcc59b27"
+  },
+  {
+    "name": "CarriageReservationTest",
+    "tests": 6,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "cases": [
+      "twoPassengersMoveToLaterCarriage",
+      "shortageLeavesNoPartialSeats",
+      "fivePassengersPreferSingleCarriage",
+      "fragmentedInventoryFallsBackAtomically",
+      "laterSeatTypeFailureRollsBackEarlierSeats",
+      "singlePassengerUsesOnlyOneSeat"
+    ],
+    "sourceSha256": "bbcb116db21061aba80bdf4dd008186ecf55cbff08daa28555af7ed83c1a5a1d"
+  },
+  {
+    "name": "PurchaseMetadataServiceTest",
+    "tests": 5,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "cases": [
+      "distinctTypesHaveIndependentPrices",
+      "missingRelationFailsBeforePrices",
+      "missingPricePreservesBusinessError",
+      "missingTrainFailsBeforeOtherReads",
+      "sameTypeIsReadOnceAndSnapshotCannotBeMutated"
+    ],
+    "sourceSha256": "95a97c001fc7dfc37ea0be4d1620a511c77c673506fdb3ff2582f88480a06f33"
+  },
+  {
+    "name": "PurchaseTicketOrchestrationTest",
+    "tests": 9,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "cases": [
+      "candidateMissStartsAnotherTransactionWithoutTakingAnotherToken",
+      "missingMetadataReturnsTokenWithoutAcquiringResourceLocks",
+      "remoteCallsStayOutsideSeatLocks",
+      "transactionCompletionFailureIsNeverRetried",
+      "transactionFailureReturnsTokensOnce",
+      "translatedLockFailureRetriesAtMostTwiceAndReturnsTokenOnce",
+      "candidateMissFallsBackWithSameResourceLocks",
+      "ambiguousOrderFailureDoesNotReleaseSeatOrToken",
+      "definiteOrderFailureCompensatesWithoutSecondTokenReturn"
+    ],
+    "sourceSha256": "1aa1b22ba5618c90236957bad18ba57a9d39ef917fd045d3fb00614e2206cbaf"
+  },
+  {
+    "name": "PurchaseTicketServiceTest",
+    "tests": 7,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "cases": [
+      "purchaseTickets_success_locksSeatsWritesTicketsAndReturnsOrderSn",
+      "purchaseTickets_mixedSeatTypes_shortageRollsBackEarlierReservation",
+      "purchaseTickets_passengerNotBelongToUser_throws",
+      "purchaseTickets_conditionalUpdateLosesRace_rollsBackAndReturnsToken",
+      "purchaseTickets_notEnoughStock_throwsAndChangesNothing",
+      "purchaseTickets_missingTrainId_throws",
+      "purchaseTickets_orderServiceFailure_compensatesSeatAndTicket"
+    ],
+    "sourceSha256": "e0941dc056ece1290729e1cf921cb3d5882b93b886ba521c43c62b3899574e04"
+  },
+  {
+    "name": "SeatAllocatorTest",
+    "tests": 10,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "cases": [
+      "laterCarriageFits_keepsSameCarriagePreference",
+      "multipleSmallCarriages_seeksPastCompletedCarriages",
+      "carriageSelectionHandlesRandomFragmentationWithoutPartialResults",
+      "singlePassenger_queriesOnce",
+      "soldOut_queriesOnce",
+      "onlyCrossCarriageFits_usesOriginalPrefix",
+      "randomizedFragmentation_matchesLegacySelection",
+      "totalShortage_returnsNothing",
+      "invalidCount_neverQueries",
+      "firstCarriageFits_queriesOnce"
+    ],
+    "sourceSha256": "19276bd5750fc89b87ca8afca3df0041e11700cec113ffe4c7c221789fa51f30"
+  },
+  {
+    "name": "TicketAvailabilityTokenBucketTest",
+    "tests": 5,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "cases": [
+      "redisFailure_degradesToPass",
+      "returnFailure_isSwallowedAndCountedAsDegrade",
+      "missingField_loadsAllVehicleSeatTypesAndRetriesOnce",
+      "disabled_doesNotAccessRedis",
+      "takeToken_recordsPassAndReject"
+    ],
+    "sourceSha256": "2f5cee228abf37b600ecaa293043c7247e9f60833e5116f3cf007e73be547880"
+  },
+  {
+    "name": "TicketCallbackServiceTest",
+    "tests": 6,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "cases": [
+      "payCallback_movesSeatToSoldAndTicketToPaid",
+      "cancelCallback_releasesSeatAndCancelsTicket",
+      "staleCancelCallback_doesNotReleaseSeatReservedByNewOrder",
+      "payCallback_repeatedCallDoesNotChangeAnything",
+      "cancelCallback_repeatedCallDoesNotChangeAnything",
+      "cancelCallback_doesNotReleaseAlreadySoldSeat"
+    ],
+    "sourceSha256": "9e7489cb52f30e246775f2af4cf53ea0e472406379b06519842e88d3403f24a6"
+  }
+]

@@ -1,0 +1,2 @@
+-> Limit: 1 row(s)  (cost=163 rows=1) (actual time=0.142..0.142 rows=1 loops=1)
+    -> Covering index lookup on t_seat using idx_seat_allocate (train_id=1, seat_type=2, seat_status=0, start_station='北京南', end_station='宁波', del_flag=0)  (cost=163 rows=467) (actual time=0.141..0.141 rows=1 loops=1)

@@ -1,0 +1,923 @@
+# my12306 当前版本并发性能重新测试任务
+
+## 一、任务目标
+
+请基于仓库当前最新代码，重新测试 my12306 的购票并发性能，建立一份**能够代表当前 HEAD 的新性能基线**。
+
+仓库：
+
+`fcj0633/my12306`
+
+本次不是简单重复旧测试，也不是根据旧数据推算新性能。
+
+必须：
+
+**阅读当前代码 → 确认旧报告哪些实现已经变化 → 实际运行压测 → 分析原始数据 → 生成新的性能报告。**
+
+禁止使用旧报告中的 QPS、锁持有时间、P99 等数字直接作为当前结果。
+
+---
+
+# 二、首先阅读这些材料
+
+优先阅读：
+
+`docs/5-后续开发规划/04-并发性能测试/并发性能测试报告.md`
+
+理解旧并发测试的：
+
+测试场景、压测脚本、20/50/100/200/400 并发矩阵、S1/S2/S3 定义、JMeter 数据统计方法、Micrometer 指标、测试环境、三项数据对账、已知 harness 问题。
+
+然后阅读：
+
+`docs/5-后续开发规划/02-结果与结论/性能演进数据分析-D1到P0.md`
+
+`docs/5-后续开发规划/02-结果与结论/P0-改动说明.md`
+
+`docs/5-后续开发规划/02-结果与结论/810张原始库存-选座查询优化对照报告.md`
+
+重点注意：
+
+旧并发报告测试时的 SeatAllocator 仍然会加载大量可售座位。
+
+当前版本已经进行了新的选座优化，包括：
+
+`LIMIT N`
+
+三列投影
+
+有序联合索引 `idx_seat_allocate`
+
+覆盖索引访问
+
+单人场景理论上只需要读取需要的座位，而不是物化全部可售座位。
+
+因此旧报告中的以下数据只能作为历史基线：
+
+`S1 ≈ 40~50 QPS`
+
+`seat-lock.hold ≈ 12~13ms`
+
+`810 张库存时 hold ≈ 24.5ms`
+
+`并发 20 已经进入吞吐平台`
+
+必须重新测试。
+
+---
+
+# 三、检查当前代码状态
+
+测试前先记录：
+
+当前 branch
+
+当前 HEAD commit SHA
+
+工作区是否 clean
+
+Java / MySQL / Redis / Nacos 版本
+
+机器 CPU / 内存
+
+当前启动服务数量
+
+JVM heap 配置
+
+Hikari 最大连接数
+
+Tomcat 最大线程数
+
+Redis 地址
+
+MySQL 地址
+
+不要修改业务代码后再测试。
+
+如果必须修复压测脚本本身的问题，必须：
+
+先记录问题；
+
+只修改测试 harness；
+
+单独提交或明确记录 diff；
+
+不得把业务优化和测试脚本修复混在一起。
+
+---
+
+# 四、确认当前购票关键链路
+
+测试前阅读当前实际代码，确认：
+
+```text
+purchase request
+    ↓
+责任链检查
+    ↓
+Redis / Lua token bucket
+    ↓
+乘车人远程查询
+    ↓
+user lock
+    ↓
+trainId + seatType lock
+    ↓
+Timer.start
+    ↓
+本地事务
+    ↓
+SeatAllocator
+    ↓
+条件占座 UPDATE
+    ↓
+ticket insert
+    ↓
+commit
+    ↓
+Timer.stop
+    ↓
+unlock
+    ↓
+远程建单
+```
+
+实际代码如果与此不同，以代码为准，并在报告中说明。
+
+特别检查：
+
+席别锁 key 是否仍然为：
+
+`trainId + seatType`
+
+SeatAllocator 是否已经使用新版限量查询。
+
+Mapper 是否使用：
+
+`idx_seat_allocate`
+
+LIMIT 参数是否真正生效。
+
+查询是否只返回：
+
+`id`
+
+`carriage_number`
+
+`seat_number`
+
+不要因为设计文档写了就认为代码已经如此，必须核实。
+
+---
+
+# 五、这次测试的核心问题
+
+本轮主要回答四个问题。
+
+## 问题 1：当前单热点购票吞吐是多少？
+
+也就是：
+
+所有请求购买同一个：
+
+```text
+trainId
++
+seatType
++
+departure
++
+arrival
+```
+
+竞争同一把席别锁。
+
+重新找出当前版本：
+
+吞吐什么时候开始饱和？
+
+最高稳定成功 QPS 大约多少？
+
+并发继续增加后，是 QPS 不增长还是继续增长？
+
+P50/P95/P99 怎么变化？
+
+---
+
+## 问题 2：SeatAllocator 优化后，锁持有时间是多少？
+
+重点测：
+
+`my12306.purchase.seat-lock.hold`
+
+至少记录：
+
+COUNT
+
+TOTAL_TIME
+
+平均 hold：
+
+```text
+hold_avg =
+ΔTOTAL_TIME / ΔCOUNT
+```
+
+不要使用 SimpleMeterRegistry 的 percentile=0 数据。
+
+如果当前仍使用 SimpleMeterRegistry：
+
+明确说明：
+
+应用侧 Timer P50/P95/P99 不可用。
+
+HTTP P50/P95/P99 使用 JMeter `.jtl` 计算。
+
+---
+
+## 问题 3：当前瓶颈是不是仍然是席别锁？
+
+必须同时采集：
+
+成功 QPS
+
+HTTP P50/P95/P99
+
+seat-lock hold average
+
+Hikari active / idle / pending / acquire
+
+CPU
+
+JVM线程
+
+Tomcat线程，如果当前可采集
+
+`Innodb_row_lock_waits`
+
+MySQL statement digest
+
+Redis command statistics
+
+如果资源没有饱和，而单 key QPS 出现平台，同时延迟随着并发增长，则可以认为席别锁仍然是主要串行化点。
+
+但不要仅凭“代码里有锁”就下结论。
+
+必须用性能数据验证。
+
+---
+
+## 问题 4：新的 LIMIT + covering index 到底给系统带来了多少收益？
+
+旧微基准已经证明：
+
+```text
+MyBatis allocate
+约 16.40ms
+→
+约 0.94ms
+```
+
+但微基准不能直接等价为购票接口性能。
+
+这次需要观察：
+
+```text
+SeatAllocator 优化
+        ↓
+seat-lock.hold 是否明显降低
+        ↓
+单键最大成功 QPS 是否提高
+        ↓
+吞吐平台是否向更高并发移动
+        ↓
+P99 是否下降
+```
+
+最终必须明确：
+
+微基准优化有没有真正转化为端到端并发收益。
+
+---
+
+# 六、S1：单键充足库存测试
+
+这是本次最重要的测试。
+
+不要只跑旧的：
+
+```text
+20 / 50 / 100 / 200 / 400
+```
+
+因为新版临界区明显缩短，旧的饱和点可能已经移动。
+
+建议使用：
+
+```text
+1
+5
+10
+20
+50
+100
+200
+400
+```
+
+其中 1/5/10 用来观察进入饱和前的增长阶段。
+
+20/50/100/200/400 用来观察饱和后的平台和排队。
+
+所有请求：
+
+单乘客
+
+单席别
+
+同一车次
+
+同一起终站
+
+同一席别锁
+
+库存必须充足。
+
+---
+
+# 七、特别修复旧 S1 的库存污染问题
+
+旧报告有一个重要问题：
+
+4 秒 warm burst 会消耗座位。
+
+400 并发 warm burst 直接吃掉约 400 张票。
+
+因此：
+
+```text
+正式窗口开始时
+810 张
+已经只剩约 410 张
+```
+
+最终导致库存耗尽，token reject 抬高总 QPS。
+
+本轮禁止再次出现这个问题。
+
+需要重新设计预热方式。
+
+原则是：
+
+**正式测试开始时，各并发档位必须具有相同的初始库存状态。**
+
+可以采用：
+
+预热后再次 reset 座位和 token bucket；
+
+或者使用不会消费目标库存的独立预热池；
+
+或者使用其它能够保证正式窗口库存一致的方法。
+
+选择实现成本最低、数据最干净的方案。
+
+正式测试必须记录：
+
+`poolBefore`
+
+`poolAfter`
+
+成功数
+
+token reject
+
+并验证：
+
+```text
+poolBefore - poolAfter == successful purchases
+```
+
+对于 S1：
+
+测试窗口期间不应该因为库存不足产生 admission reject。
+
+一旦出现：
+
+这一轮不能作为饱和吞吐数据。
+
+---
+
+# 八、每档执行方式
+
+每个并发档位：
+
+先完成固定预热。
+
+然后正式测试至少 3 轮。
+
+取中位数。
+
+如果三轮差异异常大，再检查机器环境，而不是直接平均。
+
+测试档位：
+
+```text
+1
+5
+10
+20
+50
+100
+200
+400
+```
+
+正式测试建议维持当前脚本的持续时间口径。
+
+S1 重点是持续型闭环压力，不使用一次性请求。
+
+---
+
+# 九、S1 必须输出的指标
+
+每个并发档至少输出：
+
+| 指标 | 要求 |
+|---|---|
+| concurrency | 当前并发 |
+| total QPS | 总请求吞吐 |
+| success QPS | 成功购票吞吐 |
+| success rate | 成功率 |
+| P50 | HTTP |
+| P95 | HTTP |
+| P99 | HTTP |
+| seat-lock hold avg | Micrometer |
+| token reject | 准入拒绝 |
+| seat reject | DB 条件占座冲突 |
+| Hikari pending | 连接池等待 |
+| CPU | ticket + whole machine |
+| JVM/thread | 当前线程压力 |
+| InnoDB row lock waits | DB 行锁 |
+| poolBefore | 正式测试前库存 |
+| poolAfter | 正式测试后库存 |
+
+S1 的主要性能指标使用：
+
+**success QPS**
+
+不要在存在快速失败的情况下使用 total QPS 描述系统购票能力。
+
+---
+
+# 十、重新绘制单键吞吐曲线
+
+最终报告必须根据新数据画出逻辑关系：
+
+```text
+Concurrency
+    ↓
+Success QPS
+```
+
+以及：
+
+```text
+Concurrency
+    ↓
+P50 / P95 / P99
+```
+
+以及：
+
+```text
+Concurrency
+    ↓
+seat-lock hold avg
+```
+
+找到：
+
+第一段：
+
+并发增加，QPS 上升。
+
+第二段：
+
+QPS 开始接近平台。
+
+第三段：
+
+并发继续增加，QPS不明显增加，但 P99 增长。
+
+把真正的“饱和点”根据数据重新确定。
+
+不要预设仍然是并发20。
+
+---
+
+# 十一、关于理论吞吐的分析
+
+可以计算：
+
+```text
+1 / lockHold
+```
+
+作为席别锁临界区的理论串行服务率。
+
+例如：
+
+```text
+hold = 5ms
+
+理论临界区 service rate
+≈ 200/s
+```
+
+但必须明确：
+
+它不是接口 QPS。
+
+并且：
+
+不要简单写：
+
+```text
+接口QPS =
+1 / hold
+```
+
+因为还存在：
+
+Redisson lock handoff
+
+transaction proxy
+
+线程调度
+
+Redis
+
+Feign
+
+Gateway
+
+order-service
+
+JVM
+
+等因素。
+
+需要计算：
+
+```text
+实际成功QPS / (1 / hold)
+```
+
+观察锁临界区理论上限与真实吞吐之间还存在多少损耗。
+
+如果差距很大，再继续定位。
+
+---
+
+# 十二、增加 lock wait 指标（如果成本很低，推荐）
+
+旧报告最大缺陷之一：
+
+只能测：
+
+`seat-lock.hold`
+
+不能直接测：
+
+`seat-lock.wait`
+
+如果只需要很小代码改动，可以新增：
+
+```text
+my12306.purchase.seat-lock.wait
+```
+
+计时区间：
+
+```text
+准备请求席别锁
+        ↓
+Timer.start
+        ↓
+lock()
+        ↓
+所有 seatType lock 获得
+        ↓
+Timer.stop
+```
+
+然后继续已有：
+
+```text
+seat-lock.hold
+```
+
+这样可以直接得到：
+
+```text
+wait
+vs
+hold
+```
+
+不用再通过：
+
+`N × H`
+
+推算。
+
+但是：
+
+如果加入这个埋点需要明显改动业务代码，则不要为了本轮性能测试增加过多实现。
+
+如果修改：
+
+必须确认 Timer 本身开销可以忽略，并单独提交。
+
+---
+
+# 十三、重新测试 S2：多 Key 分散
+
+旧报告的 S2 有严重干扰：
+
+`token.reject = 22036`
+
+同时真实 DB 库存又远没有耗尽。
+
+因此旧 S2 的：
+
+```text
+总QPS 104 → 453
+```
+
+不能直接作为：
+
+“41把锁吞吐提升4.3倍”
+
+的证据。
+
+本轮如果重新测试 S2：
+
+必须首先解决或定位 token bucket 异常拒绝。
+
+要求正式测试过程中：
+
+目标库存充足；
+
+token bucket 与数据库库存一致；
+
+不应该出现大量 admission reject。
+
+如果仍出现：
+
+立即停止把这一轮作为性能数据。
+
+先定位：
+
+token load
+
+token reload
+
+returnToken
+
+degrade
+
+key TTL
+
+不同 OD field
+
+是否有 fixture 重置问题。
+
+只有：
+
+```text
+success rate ≈ 100%
+```
+
+或者没有业务库存拒绝时，
+
+才适合比较：
+
+```text
+S1 单key success QPS
+vs
+S2 多key success QPS
+```
+
+从而证明锁分散带来的并行能力。
+
+---
+
+
+
+# 十六、资源瓶颈判定
+
+不要看到某个指标上升就说它是瓶颈。
+
+Hikari：
+
+只有 pending / timeout 明显出现，才能判断连接池饱和。
+
+CPU：
+
+只有接近持续高利用率，才能认为 CPU 饱和。
+
+MySQL：
+
+不仅看 SQL 时间，还要看：
+
+row lock waits
+
+statement digest
+
+连接数
+
+实际执行耗时。
+
+Tomcat：
+
+最好采集 active/current/max threads。
+
+不要继续只依赖：
+
+`jvm.threads.peak`
+
+因为它是生命周期累计峰值，不能代表当前轮。
+
+---
+
+# 十七、必须做的数据自校验
+
+每轮测试结束必须核对：
+
+```text
+JMeter 请求数
+vs
+服务端计数器
+
+JMeter 成功数
+vs
+my12306.purchase.order.success
+
+成功数
+vs
+库存实际减少
+
+token pass
+vs
+真正进入锁的人数
+
+seat-lock COUNT
+vs
+通过准入的人数
+```
+
+出现不一致：
+
+不要继续分析 QPS。
+
+先解释差异。
+
+---
+
+# 十八、不要做的事情
+
+不要：
+
+为了得到好看的 QPS 修改业务逻辑。
+
+不要：
+
+根据微基准推算当前接口 QPS。
+
+不要：
+
+把历史 50 QPS 当当前基线。
+
+不要：
+
+把 total QPS 和 success QPS 混用。
+
+不要：
+
+用快速失败抬高后的 QPS 宣称吞吐提高。
+
+不要：
+
+将跨会话绝对数字直接计算提升百分比。
+
+不要：
+
+因为 Hikari pool=10 就提前认定连接池是瓶颈。
+
+不要：
+
+看到 Redisson lock 就提前认定所有延迟都来自锁。
+
+先测，再判断。
+
+---
+
+# 十九、最终报告需要给出的核心结论
+
+最后明确回答：
+
+当前 HEAD 单 ticket 实例下：
+
+**单热点、同车次同席别的最大稳定成功 QPS 大约是多少？**
+
+吞吐从哪个并发档位开始饱和？
+
+当前 `seat-lock.hold` 平均值是多少？
+
+新版 SeatAllocator 是否显著降低了持锁时间？
+
+相比旧并发报告：
+
+```text
+~50 QPS
+~13ms hold
+并发20开始饱和
+```
+
+当前结果发生了什么变化？
+
+新的性能瓶颈在哪里？
+
+现在瓶颈仍然是席别锁？
+
+还是已经转移到：
+
+Redisson handoff
+
+Tomcat
+
+Redis
+
+Feign
+
+order service
+
+数据库
+
+连接池
+
+或其它组件？
+
+必须以实测指标回答。
+
+---
+
+# 二十、最终产物
+
+生成新的报告：
+当前版本并发性能测试报告.md
+
+
+
+新报告开头明确写：
+
+```text
+测试 commit：
+测试日期：
+测试机器：
+被测实例数：
+SeatAllocator 版本：
+索引：
+```
+
+报告至少包含：
+
+测试环境与代码版本；
+
+旧报告哪些数据已经过期；
+
+S1 单键完整并发矩阵；
+
+S1 成功 QPS / P99 / lock hold 曲线；
+
+当前饱和点；
+
+S2 多键测试及 token bucket 是否干净；
+
+
+CPU / Hikari / MySQL / Redis / Tomcat 资源指标；
+
+数据自校验；
+
+当前真实瓶颈；
+
+与旧版本的定性比较；
+
+仍不能下结论的部分。
+
+所有核心数字必须能够追溯到原始 `.jtl`、Micrometer 或数据库指标。
+
+最终不要只给“优化了多少”，重点解释：
+
+**为什么当前吞吐是这个数量级，以及下一步如果要继续提高吞吐，真正应该优化哪里。**

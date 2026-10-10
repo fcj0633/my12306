@@ -11,6 +11,7 @@ import edu.swu.fcj.my12306.biz.ticketservice.common.chain.AbstractChainContext;
 import edu.swu.fcj.my12306.biz.ticketservice.common.constant.TicketChainMarkEnum;
 import edu.swu.fcj.my12306.biz.ticketservice.common.toolkit.CacheUtil;
 import edu.swu.fcj.my12306.biz.ticketservice.dto.domain.PurchaseReservationResult;
+import edu.swu.fcj.my12306.biz.ticketservice.dto.domain.PurchaseMetadata;
 import edu.swu.fcj.my12306.biz.ticketservice.dto.domain.PurchaseTicketPassengerDetailDTO;
 import edu.swu.fcj.my12306.biz.ticketservice.dto.req.PurchaseTicketReqDTO;
 import edu.swu.fcj.my12306.biz.ticketservice.dto.resp.TicketPurchaseRespDTO;
@@ -20,6 +21,9 @@ import edu.swu.fcj.my12306.biz.ticketservice.remote.dto.PassengerActualRespDTO;
 import edu.swu.fcj.my12306.biz.ticketservice.service.PurchaseTicketService;
 import edu.swu.fcj.my12306.biz.ticketservice.service.TicketCallbackService;
 import edu.swu.fcj.my12306.biz.ticketservice.service.handler.ticket.tokenbucket.TicketAvailabilityTokenBucket;
+import edu.swu.fcj.my12306.biz.ticketservice.service.handler.ticket.seat.CarriageDirectory;
+import edu.swu.fcj.my12306.biz.ticketservice.service.handler.ticket.seat.CarriageUnavailableException;
+import edu.swu.fcj.my12306.biz.ticketservice.service.handler.ticket.seat.ReservationDatabaseLockException;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Timer;
 import lombok.RequiredArgsConstructor;
@@ -37,7 +41,7 @@ import java.util.TreeMap;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static edu.swu.fcj.my12306.biz.ticketservice.common.constant.RedisKeyConstant.LOCK_PURCHASE_TICKETS_SEAT_TYPE;
+import static edu.swu.fcj.my12306.biz.ticketservice.common.constant.RedisKeyConstant.LOCK_PURCHASE_TICKETS_CARRIAGE;
 import static edu.swu.fcj.my12306.biz.ticketservice.common.constant.RedisKeyConstant.LOCK_PURCHASE_TICKETS_USER;
 import static edu.swu.fcj.my12306.biz.ticketservice.common.constant.RedisKeyConstant.TRAIN_STATION_REMAINING_TICKET;
 
@@ -62,6 +66,8 @@ public class PurchaseTicketServiceImpl implements PurchaseTicketService {
     private final RedisCacheHelper redisCacheHelper;
     private final MeterRegistry meterRegistry;
     private final SnowflakeIdGenerator snowflakeIdGenerator;
+    private final CarriageDirectory carriageDirectory;
+    private final PurchaseMetadataService metadataService;
 
     /** P2-2：实例标识，用于在日志里区分是哪个 JVM 拿到的锁。 */
     @Value("${server.port:0}")
@@ -90,10 +96,11 @@ public class PurchaseTicketServiceImpl implements PurchaseTicketService {
         try {
             // Reject invalid passenger ownership before a request can occupy either distributed lock.
             Map<String, PassengerActualRespDTO> passengersById = loadPassengers(requestParam, username);
+            PurchaseMetadata metadata = metadataService.prepare(requestParam);
             // P2-5：orderSn 改为由显式分配 workerId 的生成器产出，不再用 Hutool 的进程级默认单例。
             String orderSn = snowflakeIdGenerator.nextId();
             PurchaseReservationResult reservation = reserveLocally(
-                    requestParam, userId, username, orderSn, passengersById, seatTypeCounts);
+                    requestParam, userId, username, orderSn, passengersById, seatTypeCounts, metadata);
             reservationCommitted = true;
 
             evictRemainingTicketCacheSafely(requestParam);
@@ -124,44 +131,94 @@ public class PurchaseTicketServiceImpl implements PurchaseTicketService {
 
     private PurchaseReservationResult reserveLocally(
             PurchaseTicketReqDTO requestParam, String userId, String username, String orderSn,
-            Map<String, PassengerActualRespDTO> passengersById, Map<Integer, Integer> seatTypeCounts) {
+            Map<String, PassengerActualRespDTO> passengersById, Map<Integer, Integer> seatTypeCounts,
+            PurchaseMetadata metadata) {
         RLock userLock = redissonClient.getLock(String.format(
                 LOCK_PURCHASE_TICKETS_USER, username, requestParam.getTrainId()));
         boolean userLockAcquired = false;
-        List<RLock> seatTypeLocks = new ArrayList<>();
-        Timer.Sample lockSample = null;
         try {
             userLock.lock();
             userLockAcquired = true;
+            Map<Integer, List<String>> directory = new TreeMap<>();
+            Map<Integer, Integer> starts = new TreeMap<>();
             for (Integer seatType : seatTypeCounts.keySet()) {
-                RLock seatTypeLock = redissonClient.getLock(String.format(
-                        LOCK_PURCHASE_TICKETS_SEAT_TYPE, requestParam.getTrainId(), seatType));
-                seatTypeLock.lock();
-                seatTypeLocks.add(seatTypeLock);
+                List<String> carriages = carriageDirectory.carriages(Long.valueOf(requestParam.getTrainId()), seatType);
+                if (carriages.isEmpty()) throw new ServiceException("站点余票不足：席别车厢不存在");
+                directory.put(seatType, carriages);
+                starts.put(seatType, carriageDirectory.nextStart(Long.valueOf(requestParam.getTrainId()), seatType, carriages.size()));
             }
-            // P2-2 观测点：两个 ticket 实例必须打印出完全相同的锁 key，否则锁不互斥、会超卖。
-            // 这两个 key 全部由 RedisKeyConstant 的常量 + String.format 构造，不含端口/主机名等实例标识。
-            log.info("[instance={}] 购票锁已获取 userLock={} seatTypeLocks={} orderSn={}",
-                    instancePort, userLock.getName(),
-                    seatTypeLocks.stream().map(RLock::getName).toList(), orderSn);
-            lockSample = Timer.start(meterRegistry);
-            return purchaseTicketTxService.doPurchaseInTransaction(
-                    requestParam, userId, username, orderSn, passengersById);
-        } finally {
-            if (lockSample != null) {
+            int attempts = directory.values().stream().mapToInt(List::size).max().orElse(0);
+            for (int attempt = 0; attempt < attempts; attempt++) {
+                Map<Integer, String> candidates = new TreeMap<>();
+                for (var entry : directory.entrySet()) {
+                    candidates.put(entry.getKey(), entry.getValue().get((starts.get(entry.getKey()) + attempt) % entry.getValue().size()));
+                }
+                meterRegistry.counter("my12306.purchase.carriage.attempt").increment();
                 try {
-                    lockSample.stop(meterRegistry.timer("my12306.purchase.seat-lock.hold"));
-                } catch (RuntimeException ex) {
-                    // Observability must never change reservation or token ownership semantics.
-                    log.warn("席别锁临界区计时上报失败。orderSn={}", orderSn, ex);
+                    PurchaseReservationResult result = reserveWithCarriageLocks(requestParam, userId, username,
+                            orderSn, passengersById, candidates, directory, metadata);
+                    meterRegistry.counter("my12306.purchase.carriage.fast-success").increment();
+                    return result;
+                } catch (CarriageUnavailableException ex) {
+                    // The transaction proxy has completed rollback before it reaches this handler.
+                    meterRegistry.counter("my12306.purchase.carriage.candidate-miss").increment();
                 }
             }
-            for (int index = seatTypeLocks.size() - 1; index >= 0; index--) {
-                unlockSafely(seatTypeLocks.get(index), "席别锁");
-            }
+            meterRegistry.counter("my12306.purchase.carriage.fallback").increment();
+            return reserveWithCarriageLocks(requestParam, userId, username, orderSn, passengersById, Map.of(), directory, metadata);
+        } finally {
             if (userLockAcquired) {
                 unlockSafely(userLock, "用户锁");
             }
+        }
+    }
+
+    private PurchaseReservationResult reserveWithCarriageLocks(PurchaseTicketReqDTO request, String userId,
+            String username, String orderSn, Map<String, PassengerActualRespDTO> passengers,
+            Map<Integer, String> candidates, Map<Integer, List<String>> directory, PurchaseMetadata metadata) {
+        List<RLock> acquired = new ArrayList<>();
+        Timer.Sample sample = null;
+        try {
+            // TreeMap + sorted directory give every instance the same total resource order.
+            for (var entry : directory.entrySet()) {
+                List<String> carriages = candidates.isEmpty() ? entry.getValue() : List.of(candidates.get(entry.getKey()));
+                for (String carriage : carriages) {
+                    RLock lock = redissonClient.getLock(String.format(LOCK_PURCHASE_TICKETS_CARRIAGE,
+                            request.getTrainId(), entry.getKey(), carriage));
+                    lock.lock();
+                    acquired.add(lock);
+                }
+            }
+            log.info("[instance={}] 购票锁已获取 userLock={} seatTypeLocks={} orderSn={}", instancePort,
+                    String.format(LOCK_PURCHASE_TICKETS_USER, username, request.getTrainId()),
+                    acquired.stream().map(RLock::getName).toList(), orderSn);
+            sample = Timer.start(meterRegistry);
+            for (int retry = 0; ; retry++) {
+                try {
+                    return purchaseTicketTxService.doPurchaseInTransaction(request, userId, username,
+                            orderSn, passengers, candidates, metadata);
+                } catch (ReservationDatabaseLockException ex) {
+                    // Catch only translated statement lock failures after proxy rollback. Commit/rollback
+                    // ambiguity (TransactionSystemException, connection failures) must never be retried.
+                    if (retry >= 2) throw ex.failure();
+                    meterRegistry.counter("my12306.purchase.carriage.db-retry").increment();
+                    try {
+                        Thread.sleep(10L * (retry + 1));
+                    } catch (InterruptedException interrupted) {
+                        Thread.currentThread().interrupt();
+                        throw new ServiceException("购票重试被中断");
+                    }
+                }
+            }
+        } finally {
+            if (sample != null) {
+                try {
+                    sample.stop(meterRegistry.timer("my12306.purchase.seat-lock.hold"));
+                } catch (RuntimeException ex) {
+                    log.warn("席别锁临界区计时上报失败。orderSn={}", orderSn, ex);
+                }
+            }
+            for (int index = acquired.size() - 1; index >= 0; index--) unlockSafely(acquired.get(index), "车厢锁");
         }
     }
 

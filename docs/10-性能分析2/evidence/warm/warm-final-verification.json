@@ -1,0 +1,3186 @@
+{
+  "formalRounds": 36,
+  "success": 4973,
+  "availableSeats": 810,
+  "token": 810,
+  "outsidePoolUnchanged": true,
+  "tests": 49,
+  "testSuites": [
+    "CarriageDirectoryTest",
+    "CarriageReservationTest",
+    "PurchaseMetadataServiceTest",
+    "PurchaseTicketOrchestrationTest",
+    "PurchaseTicketServiceTest",
+    "SeatAllocatorTest",
+    "TicketAvailabilityTokenBucketTest",
+    "TicketCallbackServiceTest"
+  ],
+  "oversell": [
+    {
+      "tag": "oversell-0",
+      "ports": [
+        9000
+      ],
+      "requests": 50,
+      "success": 10,
+      "availableStart": 10,
+      "availableEnd": 0,
+      "distinctSeats": 10,
+      "distinctOrders": 10,
+      "elapsedSeconds": 1.0560214519500732,
+      "classes": {
+        "列车站点已无余票": 40,
+        "None": 10
+      }
+    },
+    {
+      "tag": "oversell-1",
+      "ports": [
+        9000
+      ],
+      "requests": 50,
+      "success": 10,
+      "availableStart": 10,
+      "availableEnd": 0,
+      "distinctSeats": 10,
+      "distinctOrders": 10,
+      "elapsedSeconds": 0.48361921310424805,
+      "classes": {
+        "列车站点已无余票": 40,
+        "None": 10
+      }
+    },
+    {
+      "tag": "oversell-2",
+      "ports": [
+        9000
+      ],
+      "requests": 50,
+      "success": 10,
+      "availableStart": 10,
+      "availableEnd": 0,
+      "distinctSeats": 10,
+      "distinctOrders": 10,
+      "elapsedSeconds": 0.46932101249694824,
+      "classes": {
+        "None": 10,
+        "列车站点已无余票": 40
+      }
+    }
+  ],
+  "owned": {
+    "loggedOrderCount": 9371,
+    "residual": {
+      "t_order": 0,
+      "t_order_item": 0,
+      "t_ticket": 0
+    },
+    "isolatedFixturesRemaining": 0
+  },
+  "delayed": {
+    "loggedOwnedOrders": 9371,
+    "pendingBefore": 30,
+    "removableOwnedDeletedOrders": 30,
+    "preservedExistingOrders": 0,
+    "removedEntries": 30,
+    "pendingAfter": 0,
+    "remainingRemovedOwnedEntries": 0
+  },
+  "servicesStopped": true,
+  "allFormalDelayTasksRemovedImmediately": true,
+  "removedInFormal": 4973,
+  "observersStopped": true,
+  "baselineSha256": "e38adbd572fad981127b776239f197f00fccf550e7db55988ed020a68a90b608",
+  "candidateSha256": "1a0507369144d4a54e5e75746d509260484c83039f5dd944e6567d86c9ef7884",
+  "changedBaselineSource": [
+    "12306/my12306/services/ticket-services/src/main/java/edu/swu/fcj/my12306/biz/ticketservice/service/impl/PurchaseTicketServiceImpl.java",
+    "12306/my12306/services/ticket-services/src/main/java/edu/swu/fcj/my12306/biz/ticketservice/service/impl/PurchaseTicketTxService.java",
+    "12306/my12306/services/ticket-services/src/test/java/edu/swu/fcj/my12306/biz/ticketservice/service/PurchaseTicketOrchestrationTest.java",
+    "12306/my12306/services/ticket-services/src/test/java/edu/swu/fcj/my12306/biz/ticketservice/service/PurchaseTicketServiceTest.java",
+    "12306/my12306/services/ticket-services/src/test/java/edu/swu/fcj/my12306/biz/ticketservice/service/TicketCallbackServiceTest.java"
+  ],
+  "shutdownFreeMemoryGB": 5.658,
+  "machinePoints": 13,
+  "minFreeMemoryGB": 2.682,
+  "maxSampledCpu": 91,
+  "maxSampledPageReads": 15,
+  "heapMaxRatios": {
+    "user": 0.592316236022276,
+    "ticket": 0.6183135173550598,
+    "order": 0.47581811518452305,
+    "gateway": 0.4869338346560871
+  },
+  "maxConsecutiveOver80": {
+    "user": 0,
+    "ticket": 0,
+    "order": 0,
+    "gateway": 0
+  },
+  "gc": [
+    {
+      "tag": "matrix3-baseline-0-20-0",
+      "service": "ticket",
+      "pauses": [
+        {
+          "duration": 7.071,
+          "full": false,
+          "kind": "[62.790s][info][gc] GC(177) Pause Young (Prepare Mixed) (G1 Evacuation Pause) 94M->54M(104M) 7.071ms"
+        }
+      ],
+      "count": 1,
+      "fullCount": 0,
+      "totalMs": 7.071,
+      "maxMs": 7.071
+    },
+    {
+      "tag": "matrix3-baseline-0-20-0",
+      "service": "user",
+      "pauses": [],
+      "count": 0,
+      "fullCount": 0,
+      "totalMs": 0,
+      "maxMs": 0
+    },
+    {
+      "tag": "matrix3-baseline-0-20-0",
+      "service": "order",
+      "pauses": [
+        {
+          "duration": 2.323,
+          "full": false,
+          "kind": "[408.113s][info][gc] GC(108) Pause Young (Prepare Mixed) (G1 Evacuation Pause) 74M->43M(84M) 2.323ms"
+        }
+      ],
+      "count": 1,
+      "fullCount": 0,
+      "totalMs": 2.323,
+      "maxMs": 2.323
+    },
+    {
+      "tag": "matrix3-baseline-0-20-0",
+      "service": "gateway",
+      "pauses": [],
+      "count": 0,
+      "fullCount": 0,
+      "totalMs": 0,
+      "maxMs": 0
+    },
+    {
+      "tag": "matrix3-baseline-0-20-0",
+      "service": "nacos",
+      "pauses": [],
+      "count": 0,
+      "fullCount": 0,
+      "totalMs": 0,
+      "maxMs": 0
+    },
+    {
+      "tag": "matrix3-baseline-0-20-0",
+      "service": "injector",
+      "pauses": [],
+      "count": 0,
+      "fullCount": 0,
+      "totalMs": 0,
+      "maxMs": 0
+    },
+    {
+      "tag": "matrix3-baseline-0-20-1",
+      "service": "ticket",
+      "pauses": [
+        {
+          "duration": 2.645,
+          "full": false,
+          "kind": "[68.412s][info][gc] GC(178) Pause Young (Mixed) (G1 Evacuation Pause) 95M->54M(104M) 2.645ms"
+        },
+        {
+          "duration": 3.36,
+          "full": false,
+          "kind": "[68.805s][info][gc] GC(179) Pause Young (Concurrent Start) (G1 Evacuation Pause) 95M->54M(104M) 3.360ms"
+        },
+        {
+          "duration": 22.295,
+          "full": false,
+          "kind": "[68.868s][info][gc] GC(180) Pause Remark 57M->57M(104M) 22.295ms"
+        },
+        {
+          "duration": 0.353,
+          "full": false,
+          "kind": "[68.900s][info][gc] GC(180) Pause Cleanup 59M->59M(104M) 0.353ms"
+        }
+      ],
+      "count": 4,
+      "fullCount": 0,
+      "totalMs": 28.653000000000002,
+      "maxMs": 22.295
+    },
+    {
+      "tag": "matrix3-baseline-0-20-1",
+      "service": "user",
+      "pauses": [],
+      "count": 0,
+      "fullCount": 0,
+      "totalMs": 0,
+      "maxMs": 0
+    },
+    {
+      "tag": "matrix3-baseline-0-20-1",
+      "service": "order",
+      "pauses": [
+        {
+          "duration": 4.087,
+          "full": false,
+          "kind": "[414.398s][info][gc] GC(109) Pause Young (Mixed) (G1 Evacuation Pause) 74M->43M(84M) 4.087ms"
+        }
+      ],
+      "count": 1,
+      "fullCount": 0,
+      "totalMs": 4.087,
+      "maxMs": 4.087
+    },
+    {
+      "tag": "matrix3-baseline-0-20-1",
+      "service": "gateway",
+      "pauses": [],
+      "count": 0,
+      "fullCount": 0,
+      "totalMs": 0,
+      "maxMs": 0
+    },
+    {
+      "tag": "matrix3-baseline-0-20-1",
+      "service": "nacos",
+      "pauses": [],
+      "count": 0,
+      "fullCount": 0,
+      "totalMs": 0,
+      "maxMs": 0
+    },
+    {
+      "tag": "matrix3-baseline-0-20-1",
+      "service": "injector",
+      "pauses": [],
+      "count": 0,
+      "fullCount": 0,
+      "totalMs": 0,
+      "maxMs": 0
+    },
+    {
+      "tag": "matrix3-baseline-0-50-0",
+      "service": "ticket",
+      "pauses": [
+        {
+          "duration": 15.183,
+          "full": false,
+          "kind": "[75.975s][info][gc] GC(182) Pause Young (Mixed) (G1 Evacuation Pause) 95M->59M(104M) 15.183ms"
+        }
+      ],
+      "count": 1,
+      "fullCount": 0,
+      "totalMs": 15.183,
+      "maxMs": 15.183
+    },
+    {
+      "tag": "matrix3-baseline-0-50-0",
+      "service": "user",
+      "pauses": [],
+      "count": 0,
+      "fullCount": 0,
+      "totalMs": 0,
+      "maxMs": 0
+    },
+    {
+      "tag": "matrix3-baseline-0-50-0",
+      "service": "order",
+      "pauses": [],
+      "count": 0,
+      "fullCount": 0,
+      "totalMs": 0,
+      "maxMs": 0
+    },
+    {
+      "tag": "matrix3-baseline-0-50-0",
+      "service": "gateway",
+      "pauses": [],
+      "count": 0,
+      "fullCount": 0,
+      "totalMs": 0,
+      "maxMs": 0
+    },
+    {
+      "tag": "matrix3-baseline-0-50-0",
+      "service": "nacos",
+      "pauses": [],
+      "count": 0,
+      "fullCount": 0,
+      "totalMs": 0,
+      "maxMs": 0
+    },
+    {
+      "tag": "matrix3-baseline-0-50-0",
+      "service": "injector",
+      "pauses": [],
+      "count": 0,
+      "fullCount": 0,
+      "totalMs": 0,
+      "maxMs": 0
+    },
+    {
+      "tag": "matrix3-baseline-0-50-1",
+      "service": "ticket",
+      "pauses": [
+        {
+          "duration": 3.408,
+          "full": false,
+          "kind": "[82.237s][info][gc] GC(185) Pause Young (Prepare Mixed) (G1 Evacuation Pause) 95M->59M(104M) 3.408ms"
+        },
+        {
+          "duration": 3.986,
+          "full": false,
+          "kind": "[82.496s][info][gc] GC(186) Pause Young (Mixed) (G1 Evacuation Pause) 94M->59M(104M) 3.986ms"
+        }
+      ],
+      "count": 2,
+      "fullCount": 0,
+      "totalMs": 7.394,
+      "maxMs": 3.986
+    },
+    {
+      "tag": "matrix3-baseline-0-50-1",
+      "service": "user",
+      "pauses": [],
+      "count": 0,
+      "fullCount": 0,
+      "totalMs": 0,
+      "maxMs": 0
+    },
+    {
+      "tag": "matrix3-baseline-0-50-1",
+      "service": "order",
+      "pauses": [
+        {
+          "duration": 2.541,
+          "full": false,
+          "kind": "[427.777s][info][gc] GC(110) Pause Young (Concurrent Start) (G1 Evacuation Pause) 76M->43M(84M) 2.541ms"
+        },
+        {
+          "duration": 22.826,
+          "full": false,
+          "kind": "[427.826s][info][gc] GC(111) Pause Remark 45M->45M(84M) 22.826ms"
+        },
+        {
+          "duration": 0.222,
+          "full": false,
+          "kind": "[427.851s][info][gc] GC(111) Pause Cleanup 47M->47M(84M) 0.222ms"
+        }
+      ],
+      "count": 3,
+      "fullCount": 0,
+      "totalMs": 25.589000000000002,
+      "maxMs": 22.826
+    },
+    {
+      "tag": "matrix3-baseline-0-50-1",
+      "service": "gateway",
+      "pauses": [],
+      "count": 0,
+      "fullCount": 0,
+      "totalMs": 0,
+      "maxMs": 0
+    },
+    {
+      "tag": "matrix3-baseline-0-50-1",
+      "service": "nacos",
+      "pauses": [],
+      "count": 0,
+      "fullCount": 0,
+      "totalMs": 0,
+      "maxMs": 0
+    },
+    {
+      "tag": "matrix3-baseline-0-50-1",
+      "service": "injector",
+      "pauses": [
+        {
+          "duration": 5.707,
+          "full": false,
+          "kind": "[317.219s][info][gc] GC(15) Pause Young (Concurrent Start) (G1 Evacuation Pause) 56M->30M(64M) 5.707ms"
+        },
+        {
+          "duration": 59.844,
+          "full": false,
+          "kind": "[317.307s][info][gc] GC(16) Pause Remark 30M->30M(64M) 59.844ms"
+        }
+      ],
+      "count": 2,
+      "fullCount": 0,
+      "totalMs": 65.551,
+      "maxMs": 59.844
+    },
+    {
+      "tag": "matrix3-baseline-0-100-0",
+      "service": "ticket",
+      "pauses": [
+        {
+          "duration": 7.381,
+          "full": false,
+          "kind": "[90.295s][info][gc] GC(190) Pause Young (Mixed) (G1 Evacuation Pause) 93M->64M(104M) 7.381ms"
+        },
+        {
+          "duration": 13.144,
+          "full": false,
+          "kind": "[90.959s][info][gc] GC(191) Pause Young (Concurrent Start) (G1 Evacuation Pause) 92M->66M(104M) 13.144ms"
+        },
+        {
+          "duration": 57.828,
+          "full": false,
+          "kind": "[91.171s][info][gc] GC(192) Pause Remark 69M->69M(119M) 57.828ms"
+        },
+        {
+          "duration": 0.655,
+          "full": false,
+          "kind": "[91.245s][info][gc] GC(192) Pause Cleanup 71M->71M(119M) 0.655ms"
+        },
+        {
+          "duration": 7.952,
+          "full": false,
+          "kind": "[92.245s][info][gc] GC(193) Pause Young (Prepare Mixed) (G1 Evacuation Pause) 92M->66M(119M) 7.952ms"
+        }
+      ],
+      "count": 5,
+      "fullCount": 0,
+      "totalMs": 86.96000000000001,
+      "maxMs": 57.828
+    },
+    {
+      "tag": "matrix3-baseline-0-100-0",
+      "service": "user",
+      "pauses": [],
+      "count": 0,
+      "fullCount": 0,
+      "totalMs": 0,
+      "maxMs": 0
+    },
+    {
+      "tag": "matrix3-baseline-0-100-0",
+      "service": "order",
+      "pauses": [
+        {
+          "duration": 12.65,
+          "full": false,
+          "kind": "[437.824s][info][gc] GC(113) Pause Young (Mixed) (G1 Evacuation Pause) 77M->42M(84M) 12.650ms"
+        }
+      ],
+      "count": 1,
+      "fullCount": 0,
+      "totalMs": 12.65,
+      "maxMs": 12.65
+    },
+    {
+      "tag": "matrix3-baseline-0-100-0",
+      "service": "gateway",
+      "pauses": [
+        {
+          "duration": 6.404,
+          "full": false,
+          "kind": "[395.437s][info][gc] GC(53) Pause Young (Mixed) (G1 Evacuation Pause) 60M->35M(68M) 6.404ms"
+        }
+      ],
+      "count": 1,
+      "fullCount": 0,
+      "totalMs": 6.404,
+      "maxMs": 6.404
+    },
+    {
+      "tag": "matrix3-baseline-0-100-0",
+      "service": "nacos",
+      "pauses": [],
+      "count": 0,
+      "fullCount": 0,
+      "totalMs": 0,
+      "maxMs": 0
+    },
+    {
+      "tag": "matrix3-baseline-0-100-0",
+      "service": "injector",
+      "pauses": [],
+      "count": 0,
+      "fullCount": 0,
+      "totalMs": 0,
+      "maxMs": 0
+    },
+    {
+      "tag": "matrix3-baseline-0-100-1",
+      "service": "ticket",
+      "pauses": [
+        {
+          "duration": 10.245,
+          "full": false,
+          "kind": "[100.419s][info][gc] GC(195) Pause Young (Concurrent Start) (G1 Evacuation Pause) 108M->67M(119M) 10.245ms"
+        },
+        {
+          "duration": 61.169,
+          "full": false,
+          "kind": "[100.633s][info][gc] GC(196) Pause Remark 72M->72M(122M) 61.169ms"
+        },
+        {
+          "duration": 0.761,
+          "full": false,
+          "kind": "[100.700s][info][gc] GC(196) Pause Cleanup 74M->74M(122M) 0.761ms"
+        }
+      ],
+      "count": 3,
+      "fullCount": 0,
+      "totalMs": 72.175,
+      "maxMs": 61.169
+    },
+    {
+      "tag": "matrix3-baseline-0-100-1",
+      "service": "user",
+      "pauses": [],
+      "count": 0,
+      "fullCount": 0,
+      "totalMs": 0,
+      "maxMs": 0
+    },
+    {
+      "tag": "matrix3-baseline-0-100-1",
+      "service": "order",
+      "pauses": [],
+      "count": 0,
+      "fullCount": 0,
+      "totalMs": 0,
+      "maxMs": 0
+    },
+    {
+      "tag": "matrix3-baseline-0-100-1",
+      "service": "gateway",
+      "pauses": [],
+      "count": 0,
+      "fullCount": 0,
+      "totalMs": 0,
+      "maxMs": 0
+    },
+    {
+      "tag": "matrix3-baseline-0-100-1",
+      "service": "nacos",
+      "pauses": [],
+      "count": 0,
+      "fullCount": 0,
+      "totalMs": 0,
+      "maxMs": 0
+    },
+    {
+      "tag": "matrix3-baseline-0-100-1",
+      "service": "injector",
+      "pauses": [],
+      "count": 0,
+      "fullCount": 0,
+      "totalMs": 0,
+      "maxMs": 0
+    },
+    {
+      "tag": "matrix3-candidate-0-20-0",
+      "service": "ticket",
+      "pauses": [
+        {
+          "duration": 0.137,
+          "full": false,
+          "kind": "[140.703s][info][gc] GC(211) Pause Cleanup 58M->58M(100M) 0.137ms"
+        },
+        {
+          "duration": 5.63,
+          "full": false,
+          "kind": "[141.140s][info][gc] GC(212) Pause Young (Prepare Mixed) (G1 Evacuation Pause) 93M->53M(100M) 5.630ms"
+        }
+      ],
+      "count": 2,
+      "fullCount": 0,
+      "totalMs": 5.7669999999999995,
+      "maxMs": 5.63
+    },
+    {
+      "tag": "matrix3-candidate-0-20-0",
+      "service": "user",
+      "pauses": [
+        {
+          "duration": 3.777,
+          "full": false,
+          "kind": "[649.232s][info][gc] GC(179) Pause Young (Concurrent Start) (G1 Evacuation Pause) 113M->64M(124M) 3.777ms"
+        },
+        {
+          "duration": 14.539,
+          "full": false,
+          "kind": "[649.311s][info][gc] GC(180) Pause Remark 65M->65M(124M) 14.539ms"
+        },
+        {
+          "duration": 0.499,
+          "full": false,
+          "kind": "[649.364s][info][gc] GC(180) Pause Cleanup 65M->65M(124M) 0.499ms"
+        }
+      ],
+      "count": 3,
+      "fullCount": 0,
+      "totalMs": 18.814999999999998,
+      "maxMs": 14.539
+    },
+    {
+      "tag": "matrix3-candidate-0-20-0",
+      "service": "order",
+      "pauses": [],
+      "count": 0,
+      "fullCount": 0,
+      "totalMs": 0,
+      "maxMs": 0
+    },
+    {
+      "tag": "matrix3-candidate-0-20-0",
+      "service": "gateway",
+      "pauses": [],
+      "count": 0,
+      "fullCount": 0,
+      "totalMs": 0,
+      "maxMs": 0
+    },
+    {
+      "tag": "matrix3-candidate-0-20-0",
+      "service": "nacos",
+      "pauses": [],
+      "count": 0,
+      "fullCount": 0,
+      "totalMs": 0,
+      "maxMs": 0
+    },
+    {
+      "tag": "matrix3-candidate-0-20-0",
+      "service": "injector",
+      "pauses": [],
+      "count": 0,
+      "fullCount": 0,
+      "totalMs": 0,
+      "maxMs": 0
+    },
+    {
+      "tag": "matrix3-candidate-0-20-1",
+      "service": "ticket",
+      "pauses": [
+        {
+          "duration": 2.681,
+          "full": false,
+          "kind": "[147.578s][info][gc] GC(214) Pause Young (Concurrent Start) (G1 Evacuation Pause) 93M->53M(100M) 2.681ms"
+        },
+        {
+          "duration": 24.912,
+          "full": false,
+          "kind": "[147.636s][info][gc] GC(215) Pause Remark 56M->56M(100M) 24.912ms"
+        },
+        {
+          "duration": 0.178,
+          "full": false,
+          "kind": "[147.655s][info][gc] GC(215) Pause Cleanup 58M->58M(100M) 0.178ms"
+        }
+      ],
+      "count": 3,
+      "fullCount": 0,
+      "totalMs": 27.771,
+      "maxMs": 24.912
+    },
+    {
+      "tag": "matrix3-candidate-0-20-1",
+      "service": "user",
+      "pauses": [],
+      "count": 0,
+      "fullCount": 0,
+      "totalMs": 0,
+      "maxMs": 0
+    },
+    {
+      "tag": "matrix3-candidate-0-20-1",
+      "service": "order",
+      "pauses": [],
+      "count": 0,
+      "fullCount": 0,
+      "totalMs": 0,
+      "maxMs": 0
+    },
+    {
+      "tag": "matrix3-candidate-0-20-1",
+      "service": "gateway",
+      "pauses": [],
+      "count": 0,
+      "fullCount": 0,
+      "totalMs": 0,
+      "maxMs": 0
+    },
+    {
+      "tag": "matrix3-candidate-0-20-1",
+      "service": "nacos",
+      "pauses": [],
+      "count": 0,
+      "fullCount": 0,
+      "totalMs": 0,
+      "maxMs": 0
+    },
+    {
+      "tag": "matrix3-candidate-0-20-1",
+      "service": "injector",
+      "pauses": [],
+      "count": 0,
+      "fullCount": 0,
+      "totalMs": 0,
+      "maxMs": 0
+    },
+    {
+      "tag": "matrix3-candidate-0-50-0",
+      "service": "ticket",
+      "pauses": [
+        {
+          "duration": 3.096,
+          "full": false,
+          "kind": "[154.895s][info][gc] GC(217) Pause Young (Mixed) (G1 Evacuation Pause) 93M->58M(101M) 3.096ms"
+        },
+        {
+          "duration": 7.783,
+          "full": false,
+          "kind": "[155.268s][info][gc] GC(218) Pause Young (Concurrent Start) (G1 Evacuation Pause) 88M->58M(101M) 7.783ms"
+        },
+        {
+          "duration": 84.309,
+          "full": false,
+          "kind": "[155.450s][info][gc] GC(219) Pause Remark 60M->60M(105M) 84.309ms"
+        },
+        {
+          "duration": 0.602,
+          "full": false,
+          "kind": "[155.566s][info][gc] GC(219) Pause Cleanup 65M->65M(105M) 0.602ms"
+        }
+      ],
+      "count": 4,
+      "fullCount": 0,
+      "totalMs": 95.79,
+      "maxMs": 84.309
+    },
+    {
+      "tag": "matrix3-candidate-0-50-0",
+      "service": "user",
+      "pauses": [],
+      "count": 0,
+      "fullCount": 0,
+      "totalMs": 0,
+      "maxMs": 0
+    },
+    {
+      "tag": "matrix3-candidate-0-50-0",
+      "service": "order",
+      "pauses": [
+        {
+          "duration": 2.041,
+          "full": false,
+          "kind": "[639.091s][info][gc] GC(130) Pause Young (Concurrent Start) (G1 Evacuation Pause) 77M->42M(84M) 2.041ms"
+        },
+        {
+          "duration": 7.591,
+          "full": false,
+          "kind": "[639.122s][info][gc] GC(131) Pause Remark 44M->44M(84M) 7.591ms"
+        },
+        {
+          "duration": 0.216,
+          "full": false,
+          "kind": "[639.141s][info][gc] GC(131) Pause Cleanup 46M->46M(84M) 0.216ms"
+        }
+      ],
+      "count": 3,
+      "fullCount": 0,
+      "totalMs": 9.847999999999999,
+      "maxMs": 7.591
+    },
+    {
+      "tag": "matrix3-candidate-0-50-0",
+      "service": "gateway",
+      "pauses": [
+        {
+          "duration": 6.944,
+          "full": false,
+          "kind": "[599.022s][info][gc] GC(64) Pause Young (Prepare Mixed) (G1 Evacuation Pause) 61M->33M(68M) 6.944ms"
+        }
+      ],
+      "count": 1,
+      "fullCount": 0,
+      "totalMs": 6.944,
+      "maxMs": 6.944
+    },
+    {
+      "tag": "matrix3-candidate-0-50-0",
+      "service": "nacos",
+      "pauses": [],
+      "count": 0,
+      "fullCount": 0,
+      "totalMs": 0,
+      "maxMs": 0
+    },
+    {
+      "tag": "matrix3-candidate-0-50-0",
+      "service": "injector",
+      "pauses": [],
+      "count": 0,
+      "fullCount": 0,
+      "totalMs": 0,
+      "maxMs": 0
+    },
+    {
+      "tag": "matrix3-candidate-0-50-1",
+      "service": "ticket",
+      "pauses": [
+        {
+          "duration": 3.367,
+          "full": false,
+          "kind": "[162.924s][info][gc] GC(221) Pause Young (Mixed) (G1 Evacuation Pause) 97M->58M(105M) 3.367ms"
+        },
+        {
+          "duration": 2.892,
+          "full": false,
+          "kind": "[163.187s][info][gc] GC(222) Pause Young (Concurrent Start) (G1 Evacuation Pause) 94M->58M(105M) 2.892ms"
+        },
+        {
+          "duration": 8.723,
+          "full": false,
+          "kind": "[163.224s][info][gc] GC(223) Pause Remark 62M->62M(105M) 8.723ms"
+        },
+        {
+          "duration": 0.135,
+          "full": false,
+          "kind": "[163.254s][info][gc] GC(223) Pause Cleanup 66M->66M(105M) 0.135ms"
+        }
+      ],
+      "count": 4,
+      "fullCount": 0,
+      "totalMs": 15.117,
+      "maxMs": 8.723
+    },
+    {
+      "tag": "matrix3-candidate-0-50-1",
+      "service": "user",
+      "pauses": [],
+      "count": 0,
+      "fullCount": 0,
+      "totalMs": 0,
+      "maxMs": 0
+    },
+    {
+      "tag": "matrix3-candidate-0-50-1",
+      "service": "order",
+      "pauses": [
+        {
+          "duration": 1.944,
+          "full": false,
+          "kind": "[647.210s][info][gc] GC(132) Pause Young (Prepare Mixed) (G1 Evacuation Pause) 77M->42M(84M) 1.944ms"
+        }
+      ],
+      "count": 1,
+      "fullCount": 0,
+      "totalMs": 1.944,
+      "maxMs": 1.944
+    },
+    {
+      "tag": "matrix3-candidate-0-50-1",
+      "service": "gateway",
+      "pauses": [],
+      "count": 0,
+      "fullCount": 0,
+      "totalMs": 0,
+      "maxMs": 0
+    },
+    {
+      "tag": "matrix3-candidate-0-50-1",
+      "service": "nacos",
+      "pauses": [],
+      "count": 0,
+      "fullCount": 0,
+      "totalMs": 0,
+      "maxMs": 0
+    },
+    {
+      "tag": "matrix3-candidate-0-50-1",
+      "service": "injector",
+      "pauses": [],
+      "count": 0,
+      "fullCount": 0,
+      "totalMs": 0,
+      "maxMs": 0
+    },
+    {
+      "tag": "matrix3-candidate-0-100-0",
+      "service": "ticket",
+      "pauses": [
+        {
+          "duration": 3.872,
+          "full": false,
+          "kind": "[171.233s][info][gc] GC(225) Pause Young (Mixed) (G1 Evacuation Pause) 95M->58M(105M) 3.872ms"
+        },
+        {
+          "duration": 3.175,
+          "full": false,
+          "kind": "[171.343s][info][gc] GC(226) Pause Young (Concurrent Start) (G1 Evacuation Pause) 94M->65M(105M) 3.175ms"
+        },
+        {
+          "duration": 20.769,
+          "full": false,
+          "kind": "[171.402s][info][gc] GC(227) Pause Remark 72M->72M(122M) 20.769ms"
+        },
+        {
+          "duration": 0.281,
+          "full": false,
+          "kind": "[171.448s][info][gc] GC(227) Pause Cleanup 79M->79M(122M) 0.281ms"
+        },
+        {
+          "duration": 3.884,
+          "full": false,
+          "kind": "[171.534s][info][gc] GC(228) Pause Young (Prepare Mixed) (G1 Evacuation Pause) 92M->66M(122M) 3.884ms"
+        },
+        {
+          "duration": 18.731,
+          "full": false,
+          "kind": "[172.339s][info][gc] GC(229) Pause Young (Mixed) (G1 Evacuation Pause) 107M->66M(122M) 18.731ms"
+        }
+      ],
+      "count": 6,
+      "fullCount": 0,
+      "totalMs": 50.712,
+      "maxMs": 20.769
+    },
+    {
+      "tag": "matrix3-candidate-0-100-0",
+      "service": "user",
+      "pauses": [],
+      "count": 0,
+      "fullCount": 0,
+      "totalMs": 0,
+      "maxMs": 0
+    },
+    {
+      "tag": "matrix3-candidate-0-100-0",
+      "service": "order",
+      "pauses": [
+        {
+          "duration": 3.058,
+          "full": false,
+          "kind": "[655.634s][info][gc] GC(133) Pause Young (Mixed) (G1 Evacuation Pause) 77M->42M(84M) 3.058ms"
+        }
+      ],
+      "count": 1,
+      "fullCount": 0,
+      "totalMs": 3.058,
+      "maxMs": 3.058
+    },
+    {
+      "tag": "matrix3-candidate-0-100-0",
+      "service": "gateway",
+      "pauses": [
+        {
+          "duration": 8.411,
+          "full": false,
+          "kind": "[615.249s][info][gc] GC(65) Pause Young (Mixed) (G1 Evacuation Pause) 60M->35M(68M) 8.411ms"
+        }
+      ],
+      "count": 1,
+      "fullCount": 0,
+      "totalMs": 8.411,
+      "maxMs": 8.411
+    },
+    {
+      "tag": "matrix3-candidate-0-100-0",
+      "service": "nacos",
+      "pauses": [],
+      "count": 0,
+      "fullCount": 0,
+      "totalMs": 0,
+      "maxMs": 0
+    },
+    {
+      "tag": "matrix3-candidate-0-100-0",
+      "service": "injector",
+      "pauses": [],
+      "count": 0,
+      "fullCount": 0,
+      "totalMs": 0,
+      "maxMs": 0
+    },
+    {
+      "tag": "matrix3-candidate-0-100-1",
+      "service": "ticket",
+      "pauses": [
+        {
+          "duration": 2.106,
+          "full": false,
+          "kind": "[182.033s][info][gc] GC(232) Pause Young (Prepare Mixed) (G1 Evacuation Pause) 111M->67M(122M) 2.106ms"
+        },
+        {
+          "duration": 2.962,
+          "full": false,
+          "kind": "[182.315s][info][gc] GC(233) Pause Young (Mixed) (G1 Evacuation Pause) 109M->66M(122M) 2.962ms"
+        }
+      ],
+      "count": 2,
+      "fullCount": 0,
+      "totalMs": 5.068,
+      "maxMs": 2.962
+    },
+    {
+      "tag": "matrix3-candidate-0-100-1",
+      "service": "user",
+      "pauses": [],
+      "count": 0,
+      "fullCount": 0,
+      "totalMs": 0,
+      "maxMs": 0
+    },
+    {
+      "tag": "matrix3-candidate-0-100-1",
+      "service": "order",
+      "pauses": [
+        {
+          "duration": 2.165,
+          "full": false,
+          "kind": "[666.797s][info][gc] GC(136) Pause Young (Prepare Mixed) (G1 Evacuation Pause) 77M->42M(84M) 2.165ms"
+        }
+      ],
+      "count": 1,
+      "fullCount": 0,
+      "totalMs": 2.165,
+      "maxMs": 2.165
+    },
+    {
+      "tag": "matrix3-candidate-0-100-1",
+      "service": "gateway",
+      "pauses": [
+        {
+          "duration": 5.61,
+          "full": false,
+          "kind": "[626.298s][info][gc] GC(66) Pause Young (Concurrent Start) (G1 Evacuation Pause) 59M->35M(68M) 5.610ms"
+        },
+        {
+          "duration": 6.642,
+          "full": false,
+          "kind": "[626.327s][info][gc] GC(67) Pause Remark 35M->35M(68M) 6.642ms"
+        },
+        {
+          "duration": 0.18,
+          "full": false,
+          "kind": "[626.346s][info][gc] GC(67) Pause Cleanup 35M->35M(68M) 0.180ms"
+        }
+      ],
+      "count": 3,
+      "fullCount": 0,
+      "totalMs": 12.432,
+      "maxMs": 6.642
+    },
+    {
+      "tag": "matrix3-candidate-0-100-1",
+      "service": "nacos",
+      "pauses": [],
+      "count": 0,
+      "fullCount": 0,
+      "totalMs": 0,
+      "maxMs": 0
+    },
+    {
+      "tag": "matrix3-candidate-0-100-1",
+      "service": "injector",
+      "pauses": [],
+      "count": 0,
+      "fullCount": 0,
+      "totalMs": 0,
+      "maxMs": 0
+    },
+    {
+      "tag": "matrix3-baseline-1-20-0",
+      "service": "ticket",
+      "pauses": [
+        {
+          "duration": 2.791,
+          "full": false,
+          "kind": "[60.635s][info][gc] GC(164) Pause Young (Mixed) (G1 Evacuation Pause) 91M->54M(100M) 2.791ms"
+        },
+        {
+          "duration": 8.333,
+          "full": false,
+          "kind": "[61.074s][info][gc] GC(165) Pause Young (Concurrent Start) (G1 Evacuation Pause) 90M->54M(100M) 8.333ms"
+        },
+        {
+          "duration": 42.816,
+          "full": false,
+          "kind": "[61.207s][info][gc] GC(166) Pause Remark 56M->56M(100M) 42.816ms"
+        },
+        {
+          "duration": 0.536,
+          "full": false,
+          "kind": "[61.284s][info][gc] GC(166) Pause Cleanup 59M->59M(100M) 0.536ms"
+        }
+      ],
+      "count": 4,
+      "fullCount": 0,
+      "totalMs": 54.476000000000006,
+      "maxMs": 42.816
+    },
+    {
+      "tag": "matrix3-baseline-1-20-0",
+      "service": "user",
+      "pauses": [],
+      "count": 0,
+      "fullCount": 0,
+      "totalMs": 0,
+      "maxMs": 0
+    },
+    {
+      "tag": "matrix3-baseline-1-20-0",
+      "service": "order",
+      "pauses": [
+        {
+          "duration": 3.143,
+          "full": false,
+          "kind": "[776.288s][info][gc] GC(140) Pause Young (Prepare Mixed) (G1 Evacuation Pause) 76M->42M(84M) 3.143ms"
+        }
+      ],
+      "count": 1,
+      "fullCount": 0,
+      "totalMs": 3.143,
+      "maxMs": 3.143
+    },
+    {
+      "tag": "matrix3-baseline-1-20-0",
+      "service": "gateway",
+      "pauses": [],
+      "count": 0,
+      "fullCount": 0,
+      "totalMs": 0,
+      "maxMs": 0
+    },
+    {
+      "tag": "matrix3-baseline-1-20-0",
+      "service": "nacos",
+      "pauses": [],
+      "count": 0,
+      "fullCount": 0,
+      "totalMs": 0,
+      "maxMs": 0
+    },
+    {
+      "tag": "matrix3-baseline-1-20-0",
+      "service": "injector",
+      "pauses": [],
+      "count": 0,
+      "fullCount": 0,
+      "totalMs": 0,
+      "maxMs": 0
+    },
+    {
+      "tag": "matrix3-baseline-1-20-1",
+      "service": "ticket",
+      "pauses": [
+        {
+          "duration": 5.606,
+          "full": false,
+          "kind": "[67.770s][info][gc] GC(168) Pause Young (Mixed) (G1 Evacuation Pause) 90M->54M(100M) 5.606ms"
+        }
+      ],
+      "count": 1,
+      "fullCount": 0,
+      "totalMs": 5.606,
+      "maxMs": 5.606
+    },
+    {
+      "tag": "matrix3-baseline-1-20-1",
+      "service": "user",
+      "pauses": [],
+      "count": 0,
+      "fullCount": 0,
+      "totalMs": 0,
+      "maxMs": 0
+    },
+    {
+      "tag": "matrix3-baseline-1-20-1",
+      "service": "order",
+      "pauses": [],
+      "count": 0,
+      "fullCount": 0,
+      "totalMs": 0,
+      "maxMs": 0
+    },
+    {
+      "tag": "matrix3-baseline-1-20-1",
+      "service": "gateway",
+      "pauses": [
+        {
+          "duration": 2.697,
+          "full": false,
+          "kind": "[742.824s][info][gc] GC(70) Pause Young (Concurrent Start) (G1 Evacuation Pause) 62M->33M(68M) 2.697ms"
+        },
+        {
+          "duration": 7.715,
+          "full": false,
+          "kind": "[742.857s][info][gc] GC(71) Pause Remark 34M->34M(68M) 7.715ms"
+        },
+        {
+          "duration": 0.159,
+          "full": false,
+          "kind": "[742.877s][info][gc] GC(71) Pause Cleanup 34M->34M(68M) 0.159ms"
+        }
+      ],
+      "count": 3,
+      "fullCount": 0,
+      "totalMs": 10.571,
+      "maxMs": 7.715
+    },
+    {
+      "tag": "matrix3-baseline-1-20-1",
+      "service": "nacos",
+      "pauses": [],
+      "count": 0,
+      "fullCount": 0,
+      "totalMs": 0,
+      "maxMs": 0
+    },
+    {
+      "tag": "matrix3-baseline-1-20-1",
+      "service": "injector",
+      "pauses": [],
+      "count": 0,
+      "fullCount": 0,
+      "totalMs": 0,
+      "maxMs": 0
+    },
+    {
+      "tag": "matrix3-baseline-1-50-0",
+      "service": "ticket",
+      "pauses": [
+        {
+          "duration": 9.151,
+          "full": false,
+          "kind": "[75.197s][info][gc] GC(171) Pause Young (Prepare Mixed) (G1 Evacuation Pause) 91M->58M(100M) 9.151ms"
+        }
+      ],
+      "count": 1,
+      "fullCount": 0,
+      "totalMs": 9.151,
+      "maxMs": 9.151
+    },
+    {
+      "tag": "matrix3-baseline-1-50-0",
+      "service": "user",
+      "pauses": [],
+      "count": 0,
+      "fullCount": 0,
+      "totalMs": 0,
+      "maxMs": 0
+    },
+    {
+      "tag": "matrix3-baseline-1-50-0",
+      "service": "order",
+      "pauses": [
+        {
+          "duration": 6.235,
+          "full": false,
+          "kind": "[790.553s][info][gc] GC(141) Pause Young (Mixed) (G1 Evacuation Pause) 77M->41M(84M) 6.235ms"
+        }
+      ],
+      "count": 1,
+      "fullCount": 0,
+      "totalMs": 6.235,
+      "maxMs": 6.235
+    },
+    {
+      "tag": "matrix3-baseline-1-50-0",
+      "service": "gateway",
+      "pauses": [],
+      "count": 0,
+      "fullCount": 0,
+      "totalMs": 0,
+      "maxMs": 0
+    },
+    {
+      "tag": "matrix3-baseline-1-50-0",
+      "service": "nacos",
+      "pauses": [],
+      "count": 0,
+      "fullCount": 0,
+      "totalMs": 0,
+      "maxMs": 0
+    },
+    {
+      "tag": "matrix3-baseline-1-50-0",
+      "service": "injector",
+      "pauses": [],
+      "count": 0,
+      "fullCount": 0,
+      "totalMs": 0,
+      "maxMs": 0
+    },
+    {
+      "tag": "matrix3-baseline-1-50-1",
+      "service": "ticket",
+      "pauses": [
+        {
+          "duration": 2.336,
+          "full": false,
+          "kind": "[82.603s][info][gc] GC(173) Pause Young (Concurrent Start) (G1 Evacuation Pause) 93M->59M(100M) 2.336ms"
+        },
+        {
+          "duration": 21.677,
+          "full": false,
+          "kind": "[82.654s][info][gc] GC(174) Pause Remark 62M->62M(107M) 21.677ms"
+        },
+        {
+          "duration": 0.139,
+          "full": false,
+          "kind": "[82.675s][info][gc] GC(174) Pause Cleanup 64M->64M(107M) 0.139ms"
+        },
+        {
+          "duration": 3.291,
+          "full": false,
+          "kind": "[82.879s][info][gc] GC(175) Pause Young (Prepare Mixed) (G1 Evacuation Pause) 89M->59M(107M) 3.291ms"
+        }
+      ],
+      "count": 4,
+      "fullCount": 0,
+      "totalMs": 27.442999999999998,
+      "maxMs": 21.677
+    },
+    {
+      "tag": "matrix3-baseline-1-50-1",
+      "service": "user",
+      "pauses": [],
+      "count": 0,
+      "fullCount": 0,
+      "totalMs": 0,
+      "maxMs": 0
+    },
+    {
+      "tag": "matrix3-baseline-1-50-1",
+      "service": "order",
+      "pauses": [
+        {
+          "duration": 3.07,
+          "full": false,
+          "kind": "[798.386s][info][gc] GC(142) Pause Young (Concurrent Start) (G1 Evacuation Pause) 76M->41M(84M) 3.070ms"
+        },
+        {
+          "duration": 9.975,
+          "full": false,
+          "kind": "[798.429s][info][gc] GC(143) Pause Remark 44M->44M(84M) 9.975ms"
+        },
+        {
+          "duration": 0.38,
+          "full": false,
+          "kind": "[798.467s][info][gc] GC(143) Pause Cleanup 46M->46M(84M) 0.380ms"
+        }
+      ],
+      "count": 3,
+      "fullCount": 0,
+      "totalMs": 13.425,
+      "maxMs": 9.975
+    },
+    {
+      "tag": "matrix3-baseline-1-50-1",
+      "service": "gateway",
+      "pauses": [],
+      "count": 0,
+      "fullCount": 0,
+      "totalMs": 0,
+      "maxMs": 0
+    },
+    {
+      "tag": "matrix3-baseline-1-50-1",
+      "service": "nacos",
+      "pauses": [],
+      "count": 0,
+      "fullCount": 0,
+      "totalMs": 0,
+      "maxMs": 0
+    },
+    {
+      "tag": "matrix3-baseline-1-50-1",
+      "service": "injector",
+      "pauses": [
+        {
+          "duration": 2.436,
+          "full": false,
+          "kind": "[687.120s][info][gc] GC(22) Pause Young (Normal) (G1 Evacuation Pause) 56M->27M(64M) 2.436ms"
+        }
+      ],
+      "count": 1,
+      "fullCount": 0,
+      "totalMs": 2.436,
+      "maxMs": 2.436
+    },
+    {
+      "tag": "matrix3-baseline-1-100-0",
+      "service": "ticket",
+      "pauses": [
+        {
+          "duration": 10.275,
+          "full": false,
+          "kind": "[90.488s][info][gc] GC(178) Pause Remark 72M->72M(124M) 10.275ms"
+        },
+        {
+          "duration": 0.141,
+          "full": false,
+          "kind": "[90.513s][info][gc] GC(178) Pause Cleanup 79M->79M(124M) 0.141ms"
+        },
+        {
+          "duration": 3.731,
+          "full": false,
+          "kind": "[90.616s][info][gc] GC(179) Pause Young (Prepare Mixed) (G1 Evacuation Pause) 95M->65M(124M) 3.731ms"
+        },
+        {
+          "duration": 11.307,
+          "full": false,
+          "kind": "[91.371s][info][gc] GC(180) Pause Young (Mixed) (G1 Evacuation Pause) 111M->66M(124M) 11.307ms"
+        }
+      ],
+      "count": 4,
+      "fullCount": 0,
+      "totalMs": 25.454,
+      "maxMs": 11.307
+    },
+    {
+      "tag": "matrix3-baseline-1-100-0",
+      "service": "user",
+      "pauses": [],
+      "count": 0,
+      "fullCount": 0,
+      "totalMs": 0,
+      "maxMs": 0
+    },
+    {
+      "tag": "matrix3-baseline-1-100-0",
+      "service": "order",
+      "pauses": [
+        {
+          "duration": 6.022,
+          "full": false,
+          "kind": "[806.542s][info][gc] GC(144) Pause Young (Prepare Mixed) (G1 Evacuation Pause) 76M->41M(84M) 6.022ms"
+        }
+      ],
+      "count": 1,
+      "fullCount": 0,
+      "totalMs": 6.022,
+      "maxMs": 6.022
+    },
+    {
+      "tag": "matrix3-baseline-1-100-0",
+      "service": "gateway",
+      "pauses": [],
+      "count": 0,
+      "fullCount": 0,
+      "totalMs": 0,
+      "maxMs": 0
+    },
+    {
+      "tag": "matrix3-baseline-1-100-0",
+      "service": "nacos",
+      "pauses": [],
+      "count": 0,
+      "fullCount": 0,
+      "totalMs": 0,
+      "maxMs": 0
+    },
+    {
+      "tag": "matrix3-baseline-1-100-0",
+      "service": "injector",
+      "pauses": [],
+      "count": 0,
+      "fullCount": 0,
+      "totalMs": 0,
+      "maxMs": 0
+    },
+    {
+      "tag": "matrix3-baseline-1-100-1",
+      "service": "ticket",
+      "pauses": [
+        {
+          "duration": 3.611,
+          "full": false,
+          "kind": "[100.958s][info][gc] GC(183) Pause Young (Prepare Mixed) (G1 Evacuation Pause) 113M->68M(124M) 3.611ms"
+        },
+        {
+          "duration": 4.254,
+          "full": false,
+          "kind": "[101.214s][info][gc] GC(184) Pause Young (Mixed) (G1 Evacuation Pause) 111M->67M(124M) 4.254ms"
+        },
+        {
+          "duration": 6.495,
+          "full": false,
+          "kind": "[101.701s][info][gc] GC(185) Pause Young (Concurrent Start) (G1 Evacuation Pause) 111M->66M(124M) 6.495ms"
+        },
+        {
+          "duration": 34.401,
+          "full": false,
+          "kind": "[101.810s][info][gc] GC(186) Pause Remark 70M->70M(124M) 34.401ms"
+        },
+        {
+          "duration": 0.437,
+          "full": false,
+          "kind": "[101.875s][info][gc] GC(186) Pause Cleanup 73M->73M(124M) 0.437ms"
+        }
+      ],
+      "count": 5,
+      "fullCount": 0,
+      "totalMs": 49.198,
+      "maxMs": 34.401
+    },
+    {
+      "tag": "matrix3-baseline-1-100-1",
+      "service": "user",
+      "pauses": [],
+      "count": 0,
+      "fullCount": 0,
+      "totalMs": 0,
+      "maxMs": 0
+    },
+    {
+      "tag": "matrix3-baseline-1-100-1",
+      "service": "order",
+      "pauses": [
+        {
+          "duration": 3.503,
+          "full": false,
+          "kind": "[816.561s][info][gc] GC(145) Pause Young (Mixed) (G1 Evacuation Pause) 76M->41M(84M) 3.503ms"
+        }
+      ],
+      "count": 1,
+      "fullCount": 0,
+      "totalMs": 3.503,
+      "maxMs": 3.503
+    },
+    {
+      "tag": "matrix3-baseline-1-100-1",
+      "service": "gateway",
+      "pauses": [
+        {
+          "duration": 5.934,
+          "full": false,
+          "kind": "[776.224s][info][gc] GC(73) Pause Young (Mixed) (G1 Evacuation Pause) 60M->35M(68M) 5.934ms"
+        }
+      ],
+      "count": 1,
+      "fullCount": 0,
+      "totalMs": 5.934,
+      "maxMs": 5.934
+    },
+    {
+      "tag": "matrix3-baseline-1-100-1",
+      "service": "nacos",
+      "pauses": [],
+      "count": 0,
+      "fullCount": 0,
+      "totalMs": 0,
+      "maxMs": 0
+    },
+    {
+      "tag": "matrix3-baseline-1-100-1",
+      "service": "injector",
+      "pauses": [],
+      "count": 0,
+      "fullCount": 0,
+      "totalMs": 0,
+      "maxMs": 0
+    },
+    {
+      "tag": "matrix3-candidate-1-20-0",
+      "service": "ticket",
+      "pauses": [
+        {
+          "duration": 2.741,
+          "full": false,
+          "kind": "[71.727s][info][gc] GC(180) Pause Young (Concurrent Start) (G1 Evacuation Pause) 93M->55M(102M) 2.741ms"
+        },
+        {
+          "duration": 11.897,
+          "full": false,
+          "kind": "[71.765s][info][gc] GC(181) Pause Remark 58M->58M(102M) 11.897ms"
+        },
+        {
+          "duration": 0.114,
+          "full": false,
+          "kind": "[71.781s][info][gc] GC(181) Pause Cleanup 59M->59M(102M) 0.114ms"
+        },
+        {
+          "duration": 2.628,
+          "full": false,
+          "kind": "[72.077s][info][gc] GC(182) Pause Young (Prepare Mixed) (G1 Evacuation Pause) 92M->55M(102M) 2.628ms"
+        }
+      ],
+      "count": 4,
+      "fullCount": 0,
+      "totalMs": 17.380000000000003,
+      "maxMs": 11.897
+    },
+    {
+      "tag": "matrix3-candidate-1-20-0",
+      "service": "user",
+      "pauses": [],
+      "count": 0,
+      "fullCount": 0,
+      "totalMs": 0,
+      "maxMs": 0
+    },
+    {
+      "tag": "matrix3-candidate-1-20-0",
+      "service": "order",
+      "pauses": [
+        {
+          "duration": 1.996,
+          "full": false,
+          "kind": "[928.573s][info][gc] GC(152) Pause Young (Prepare Mixed) (G1 Evacuation Pause) 76M->41M(84M) 1.996ms"
+        }
+      ],
+      "count": 1,
+      "fullCount": 0,
+      "totalMs": 1.996,
+      "maxMs": 1.996
+    },
+    {
+      "tag": "matrix3-candidate-1-20-0",
+      "service": "gateway",
+      "pauses": [],
+      "count": 0,
+      "fullCount": 0,
+      "totalMs": 0,
+      "maxMs": 0
+    },
+    {
+      "tag": "matrix3-candidate-1-20-0",
+      "service": "nacos",
+      "pauses": [],
+      "count": 0,
+      "fullCount": 0,
+      "totalMs": 0,
+      "maxMs": 0
+    },
+    {
+      "tag": "matrix3-candidate-1-20-0",
+      "service": "injector",
+      "pauses": [],
+      "count": 0,
+      "fullCount": 0,
+      "totalMs": 0,
+      "maxMs": 0
+    },
+    {
+      "tag": "matrix3-candidate-1-20-1",
+      "service": "ticket",
+      "pauses": [
+        {
+          "duration": 3.656,
+          "full": false,
+          "kind": "[78.611s][info][gc] GC(184) Pause Young (Concurrent Start) (G1 Evacuation Pause) 93M->55M(102M) 3.656ms"
+        },
+        {
+          "duration": 52.831,
+          "full": false,
+          "kind": "[78.719s][info][gc] GC(185) Pause Remark 58M->58M(102M) 52.831ms"
+        },
+        {
+          "duration": 0.411,
+          "full": false,
+          "kind": "[78.763s][info][gc] GC(185) Pause Cleanup 59M->59M(102M) 0.411ms"
+        }
+      ],
+      "count": 3,
+      "fullCount": 0,
+      "totalMs": 56.898,
+      "maxMs": 52.831
+    },
+    {
+      "tag": "matrix3-candidate-1-20-1",
+      "service": "user",
+      "pauses": [],
+      "count": 0,
+      "fullCount": 0,
+      "totalMs": 0,
+      "maxMs": 0
+    },
+    {
+      "tag": "matrix3-candidate-1-20-1",
+      "service": "order",
+      "pauses": [
+        {
+          "duration": 11.068,
+          "full": false,
+          "kind": "[935.727s][info][gc] GC(153) Pause Young (Mixed) (G1 Evacuation Pause) 76M->41M(84M) 11.068ms"
+        }
+      ],
+      "count": 1,
+      "fullCount": 0,
+      "totalMs": 11.068,
+      "maxMs": 11.068
+    },
+    {
+      "tag": "matrix3-candidate-1-20-1",
+      "service": "gateway",
+      "pauses": [],
+      "count": 0,
+      "fullCount": 0,
+      "totalMs": 0,
+      "maxMs": 0
+    },
+    {
+      "tag": "matrix3-candidate-1-20-1",
+      "service": "nacos",
+      "pauses": [],
+      "count": 0,
+      "fullCount": 0,
+      "totalMs": 0,
+      "maxMs": 0
+    },
+    {
+      "tag": "matrix3-candidate-1-20-1",
+      "service": "injector",
+      "pauses": [
+        {
+          "duration": 1.913,
+          "full": false,
+          "kind": "[824.077s][info][gc] GC(24) Pause Young (Normal) (G1 Evacuation Pause) 58M->26M(64M) 1.913ms"
+        }
+      ],
+      "count": 1,
+      "fullCount": 0,
+      "totalMs": 1.913,
+      "maxMs": 1.913
+    },
+    {
+      "tag": "matrix3-candidate-1-50-0",
+      "service": "ticket",
+      "pauses": [
+        {
+          "duration": 4.49,
+          "full": false,
+          "kind": "[85.441s][info][gc] GC(187) Pause Young (Mixed) (G1 Evacuation Pause) 92M->60M(102M) 4.490ms"
+        },
+        {
+          "duration": 4.108,
+          "full": false,
+          "kind": "[85.618s][info][gc] GC(188) Pause Young (Concurrent Start) (G1 Evacuation Pause) 90M->61M(102M) 4.108ms"
+        },
+        {
+          "duration": 13.278,
+          "full": false,
+          "kind": "[85.673s][info][gc] GC(189) Pause Remark 68M->68M(115M) 13.278ms"
+        },
+        {
+          "duration": 0.18,
+          "full": false,
+          "kind": "[85.693s][info][gc] GC(189) Pause Cleanup 71M->71M(115M) 0.180ms"
+        },
+        {
+          "duration": 2.426,
+          "full": false,
+          "kind": "[85.830s][info][gc] GC(190) Pause Young (Prepare Mixed) (G1 Evacuation Pause) 92M->60M(115M) 2.426ms"
+        }
+      ],
+      "count": 5,
+      "fullCount": 0,
+      "totalMs": 24.482,
+      "maxMs": 13.278
+    },
+    {
+      "tag": "matrix3-candidate-1-50-0",
+      "service": "user",
+      "pauses": [],
+      "count": 0,
+      "fullCount": 0,
+      "totalMs": 0,
+      "maxMs": 0
+    },
+    {
+      "tag": "matrix3-candidate-1-50-0",
+      "service": "order",
+      "pauses": [
+        {
+          "duration": 3.06,
+          "full": false,
+          "kind": "[942.588s][info][gc] GC(154) Pause Young (Concurrent Start) (G1 Evacuation Pause) 76M->41M(84M) 3.060ms"
+        },
+        {
+          "duration": 13.106,
+          "full": false,
+          "kind": "[942.647s][info][gc] GC(155) Pause Remark 45M->45M(84M) 13.106ms"
+        }
+      ],
+      "count": 2,
+      "fullCount": 0,
+      "totalMs": 16.166,
+      "maxMs": 13.106
+    },
+    {
+      "tag": "matrix3-candidate-1-50-0",
+      "service": "gateway",
+      "pauses": [
+        {
+          "duration": 2.965,
+          "full": false,
+          "kind": "[901.736s][info][gc] GC(78) Pause Young (Concurrent Start) (G1 Evacuation Pause) 62M->33M(68M) 2.965ms"
+        },
+        {
+          "duration": 6.311,
+          "full": false,
+          "kind": "[901.762s][info][gc] GC(79) Pause Remark 35M->35M(68M) 6.311ms"
+        },
+        {
+          "duration": 0.149,
+          "full": false,
+          "kind": "[901.775s][info][gc] GC(79) Pause Cleanup 35M->35M(68M) 0.149ms"
+        }
+      ],
+      "count": 3,
+      "fullCount": 0,
+      "totalMs": 9.424999999999999,
+      "maxMs": 6.311
+    },
+    {
+      "tag": "matrix3-candidate-1-50-0",
+      "service": "nacos",
+      "pauses": [],
+      "count": 0,
+      "fullCount": 0,
+      "totalMs": 0,
+      "maxMs": 0
+    },
+    {
+      "tag": "matrix3-candidate-1-50-0",
+      "service": "injector",
+      "pauses": [],
+      "count": 0,
+      "fullCount": 0,
+      "totalMs": 0,
+      "maxMs": 0
+    },
+    {
+      "tag": "matrix3-candidate-1-50-1",
+      "service": "ticket",
+      "pauses": [
+        {
+          "duration": 2.833,
+          "full": false,
+          "kind": "[93.977s][info][gc] GC(192) Pause Young (Concurrent Start) (G1 Evacuation Pause) 106M->61M(115M) 2.833ms"
+        },
+        {
+          "duration": 15.911,
+          "full": false,
+          "kind": "[94.035s][info][gc] GC(193) Pause Remark 67M->67M(115M) 15.911ms"
+        },
+        {
+          "duration": 0.222,
+          "full": false,
+          "kind": "[94.057s][info][gc] GC(193) Pause Cleanup 70M->70M(115M) 0.222ms"
+        },
+        {
+          "duration": 8.713,
+          "full": false,
+          "kind": "[94.636s][info][gc] GC(194) Pause Young (Prepare Mixed) (G1 Evacuation Pause) 105M->60M(115M) 8.713ms"
+        }
+      ],
+      "count": 4,
+      "fullCount": 0,
+      "totalMs": 27.679000000000002,
+      "maxMs": 15.911
+    },
+    {
+      "tag": "matrix3-candidate-1-50-1",
+      "service": "user",
+      "pauses": [
+        {
+          "duration": 7.108,
+          "full": false,
+          "kind": "[975.210s][info][gc] GC(201) Pause Young (Prepare Mixed) (G1 Evacuation Pause) 111M->66M(124M) 7.108ms"
+        }
+      ],
+      "count": 1,
+      "fullCount": 0,
+      "totalMs": 7.108,
+      "maxMs": 7.108
+    },
+    {
+      "tag": "matrix3-candidate-1-50-1",
+      "service": "order",
+      "pauses": [
+        {
+          "duration": 7.267,
+          "full": false,
+          "kind": "[951.232s][info][gc] GC(156) Pause Young (Prepare Mixed) (G1 Evacuation Pause) 76M->41M(84M) 7.267ms"
+        }
+      ],
+      "count": 1,
+      "fullCount": 0,
+      "totalMs": 7.267,
+      "maxMs": 7.267
+    },
+    {
+      "tag": "matrix3-candidate-1-50-1",
+      "service": "gateway",
+      "pauses": [],
+      "count": 0,
+      "fullCount": 0,
+      "totalMs": 0,
+      "maxMs": 0
+    },
+    {
+      "tag": "matrix3-candidate-1-50-1",
+      "service": "nacos",
+      "pauses": [],
+      "count": 0,
+      "fullCount": 0,
+      "totalMs": 0,
+      "maxMs": 0
+    },
+    {
+      "tag": "matrix3-candidate-1-50-1",
+      "service": "injector",
+      "pauses": [],
+      "count": 0,
+      "fullCount": 0,
+      "totalMs": 0,
+      "maxMs": 0
+    },
+    {
+      "tag": "matrix3-candidate-1-100-0",
+      "service": "ticket",
+      "pauses": [
+        {
+          "duration": 4.568,
+          "full": false,
+          "kind": "[102.943s][info][gc] GC(196) Pause Young (Concurrent Start) (G1 Evacuation Pause) 104M->67M(115M) 4.568ms"
+        },
+        {
+          "duration": 29.769,
+          "full": false,
+          "kind": "[103.038s][info][gc] GC(197) Pause Remark 71M->71M(122M) 29.769ms"
+        },
+        {
+          "duration": 0.486,
+          "full": false,
+          "kind": "[103.093s][info][gc] GC(197) Pause Cleanup 74M->74M(122M) 0.486ms"
+        },
+        {
+          "duration": 10.263,
+          "full": false,
+          "kind": "[103.947s][info][gc] GC(198) Pause Young (Prepare Mixed) (G1 Evacuation Pause) 101M->68M(122M) 10.263ms"
+        }
+      ],
+      "count": 4,
+      "fullCount": 0,
+      "totalMs": 45.08599999999999,
+      "maxMs": 29.769
+    },
+    {
+      "tag": "matrix3-candidate-1-100-0",
+      "service": "user",
+      "pauses": [],
+      "count": 0,
+      "fullCount": 0,
+      "totalMs": 0,
+      "maxMs": 0
+    },
+    {
+      "tag": "matrix3-candidate-1-100-0",
+      "service": "order",
+      "pauses": [
+        {
+          "duration": 8.63,
+          "full": false,
+          "kind": "[961.169s][info][gc] GC(157) Pause Young (Mixed) (G1 Evacuation Pause) 76M->41M(84M) 8.630ms"
+        }
+      ],
+      "count": 1,
+      "fullCount": 0,
+      "totalMs": 8.63,
+      "maxMs": 8.63
+    },
+    {
+      "tag": "matrix3-candidate-1-100-0",
+      "service": "gateway",
+      "pauses": [],
+      "count": 0,
+      "fullCount": 0,
+      "totalMs": 0,
+      "maxMs": 0
+    },
+    {
+      "tag": "matrix3-candidate-1-100-0",
+      "service": "nacos",
+      "pauses": [],
+      "count": 0,
+      "fullCount": 0,
+      "totalMs": 0,
+      "maxMs": 0
+    },
+    {
+      "tag": "matrix3-candidate-1-100-0",
+      "service": "injector",
+      "pauses": [],
+      "count": 0,
+      "fullCount": 0,
+      "totalMs": 0,
+      "maxMs": 0
+    },
+    {
+      "tag": "matrix3-candidate-1-100-1",
+      "service": "ticket",
+      "pauses": [
+        {
+          "duration": 2.804,
+          "full": false,
+          "kind": "[112.270s][info][gc] GC(200) Pause Young (Concurrent Start) (G1 Evacuation Pause) 111M->69M(122M) 2.804ms"
+        },
+        {
+          "duration": 10.582,
+          "full": false,
+          "kind": "[112.309s][info][gc] GC(201) Pause Remark 75M->75M(129M) 10.582ms"
+        },
+        {
+          "duration": 0.205,
+          "full": false,
+          "kind": "[112.326s][info][gc] GC(201) Pause Cleanup 79M->79M(129M) 0.205ms"
+        },
+        {
+          "duration": 3.074,
+          "full": false,
+          "kind": "[112.484s][info][gc] GC(202) Pause Young (Prepare Mixed) (G1 Evacuation Pause) 109M->70M(129M) 3.074ms"
+        }
+      ],
+      "count": 4,
+      "fullCount": 0,
+      "totalMs": 16.665,
+      "maxMs": 10.582
+    },
+    {
+      "tag": "matrix3-candidate-1-100-1",
+      "service": "user",
+      "pauses": [],
+      "count": 0,
+      "fullCount": 0,
+      "totalMs": 0,
+      "maxMs": 0
+    },
+    {
+      "tag": "matrix3-candidate-1-100-1",
+      "service": "order",
+      "pauses": [
+        {
+          "duration": 2.592,
+          "full": false,
+          "kind": "[969.424s][info][gc] GC(158) Pause Young (Concurrent Start) (G1 Evacuation Pause) 76M->41M(84M) 2.592ms"
+        },
+        {
+          "duration": 8.563,
+          "full": false,
+          "kind": "[969.464s][info][gc] GC(159) Pause Remark 44M->44M(84M) 8.563ms"
+        },
+        {
+          "duration": 0.156,
+          "full": false,
+          "kind": "[969.481s][info][gc] GC(159) Pause Cleanup 46M->46M(84M) 0.156ms"
+        }
+      ],
+      "count": 3,
+      "fullCount": 0,
+      "totalMs": 11.311000000000002,
+      "maxMs": 8.563
+    },
+    {
+      "tag": "matrix3-candidate-1-100-1",
+      "service": "gateway",
+      "pauses": [
+        {
+          "duration": 10.662,
+          "full": false,
+          "kind": "[929.030s][info][gc] GC(81) Pause Young (Mixed) (G1 Evacuation Pause) 62M->34M(69M) 10.662ms"
+        }
+      ],
+      "count": 1,
+      "fullCount": 0,
+      "totalMs": 10.662,
+      "maxMs": 10.662
+    },
+    {
+      "tag": "matrix3-candidate-1-100-1",
+      "service": "nacos",
+      "pauses": [
+        {
+          "duration": 5.667,
+          "full": false,
+          "kind": "[1015.478s][info][gc] GC(97) Pause Young (Mixed) (G1 Evacuation Pause) 117M->76M(132M) 5.667ms"
+        }
+      ],
+      "count": 1,
+      "fullCount": 0,
+      "totalMs": 5.667,
+      "maxMs": 5.667
+    },
+    {
+      "tag": "matrix3-candidate-1-100-1",
+      "service": "injector",
+      "pauses": [
+        {
+          "duration": 2.819,
+          "full": false,
+          "kind": "[857.957s][info][gc] GC(25) Pause Young (Normal) (G1 Evacuation Pause) 56M->29M(64M) 2.819ms"
+        }
+      ],
+      "count": 1,
+      "fullCount": 0,
+      "totalMs": 2.819,
+      "maxMs": 2.819
+    },
+    {
+      "tag": "matrix3-baseline-2-20-0",
+      "service": "ticket",
+      "pauses": [
+        {
+          "duration": 3.068,
+          "full": false,
+          "kind": "[73.867s][info][gc] GC(175) Pause Young (Prepare Mixed) (G1 Evacuation Pause) 92M->54M(102M) 3.068ms"
+        }
+      ],
+      "count": 1,
+      "fullCount": 0,
+      "totalMs": 3.068,
+      "maxMs": 3.068
+    },
+    {
+      "tag": "matrix3-baseline-2-20-0",
+      "service": "user",
+      "pauses": [],
+      "count": 0,
+      "fullCount": 0,
+      "totalMs": 0,
+      "maxMs": 0
+    },
+    {
+      "tag": "matrix3-baseline-2-20-0",
+      "service": "order",
+      "pauses": [
+        {
+          "duration": 5.394,
+          "full": false,
+          "kind": "[1088.374s][info][gc] GC(165) Pause Young (Mixed) (G1 Evacuation Pause) 76M->41M(84M) 5.394ms"
+        }
+      ],
+      "count": 1,
+      "fullCount": 0,
+      "totalMs": 5.394,
+      "maxMs": 5.394
+    },
+    {
+      "tag": "matrix3-baseline-2-20-0",
+      "service": "gateway",
+      "pauses": [],
+      "count": 0,
+      "fullCount": 0,
+      "totalMs": 0,
+      "maxMs": 0
+    },
+    {
+      "tag": "matrix3-baseline-2-20-0",
+      "service": "nacos",
+      "pauses": [],
+      "count": 0,
+      "fullCount": 0,
+      "totalMs": 0,
+      "maxMs": 0
+    },
+    {
+      "tag": "matrix3-baseline-2-20-0",
+      "service": "injector",
+      "pauses": [],
+      "count": 0,
+      "fullCount": 0,
+      "totalMs": 0,
+      "maxMs": 0
+    },
+    {
+      "tag": "matrix3-baseline-2-20-1",
+      "service": "ticket",
+      "pauses": [
+        {
+          "duration": 11.342,
+          "full": false,
+          "kind": "[81.687s][info][gc] GC(178) Pause Remark 58M->58M(102M) 11.342ms"
+        },
+        {
+          "duration": 0.154,
+          "full": false,
+          "kind": "[81.703s][info][gc] GC(178) Pause Cleanup 60M->60M(102M) 0.154ms"
+        },
+        {
+          "duration": 3.094,
+          "full": false,
+          "kind": "[81.954s][info][gc] GC(179) Pause Young (Prepare Mixed) (G1 Evacuation Pause) 93M->54M(102M) 3.094ms"
+        }
+      ],
+      "count": 3,
+      "fullCount": 0,
+      "totalMs": 14.59,
+      "maxMs": 11.342
+    },
+    {
+      "tag": "matrix3-baseline-2-20-1",
+      "service": "user",
+      "pauses": [],
+      "count": 0,
+      "fullCount": 0,
+      "totalMs": 0,
+      "maxMs": 0
+    },
+    {
+      "tag": "matrix3-baseline-2-20-1",
+      "service": "order",
+      "pauses": [],
+      "count": 0,
+      "fullCount": 0,
+      "totalMs": 0,
+      "maxMs": 0
+    },
+    {
+      "tag": "matrix3-baseline-2-20-1",
+      "service": "gateway",
+      "pauses": [],
+      "count": 0,
+      "fullCount": 0,
+      "totalMs": 0,
+      "maxMs": 0
+    },
+    {
+      "tag": "matrix3-baseline-2-20-1",
+      "service": "nacos",
+      "pauses": [],
+      "count": 0,
+      "fullCount": 0,
+      "totalMs": 0,
+      "maxMs": 0
+    },
+    {
+      "tag": "matrix3-baseline-2-20-1",
+      "service": "injector",
+      "pauses": [],
+      "count": 0,
+      "fullCount": 0,
+      "totalMs": 0,
+      "maxMs": 0
+    },
+    {
+      "tag": "matrix3-baseline-2-50-0",
+      "service": "ticket",
+      "pauses": [
+        {
+          "duration": 3.645,
+          "full": false,
+          "kind": "[89.552s][info][gc] GC(181) Pause Young (Concurrent Start) (G1 Evacuation Pause) 94M->59M(102M) 3.645ms"
+        },
+        {
+          "duration": 23.063,
+          "full": false,
+          "kind": "[89.609s][info][gc] GC(182) Pause Remark 64M->64M(110M) 23.063ms"
+        },
+        {
+          "duration": 0.197,
+          "full": false,
+          "kind": "[89.627s][info][gc] GC(182) Pause Cleanup 66M->66M(110M) 0.197ms"
+        },
+        {
+          "duration": 3.263,
+          "full": false,
+          "kind": "[89.795s][info][gc] GC(183) Pause Young (Prepare Mixed) (G1 Evacuation Pause) 89M->59M(110M) 3.263ms"
+        }
+      ],
+      "count": 4,
+      "fullCount": 0,
+      "totalMs": 30.168,
+      "maxMs": 23.063
+    },
+    {
+      "tag": "matrix3-baseline-2-50-0",
+      "service": "user",
+      "pauses": [],
+      "count": 0,
+      "fullCount": 0,
+      "totalMs": 0,
+      "maxMs": 0
+    },
+    {
+      "tag": "matrix3-baseline-2-50-0",
+      "service": "order",
+      "pauses": [
+        {
+          "duration": 2.308,
+          "full": false,
+          "kind": "[1103.734s][info][gc] GC(166) Pause Young (Concurrent Start) (G1 Evacuation Pause) 76M->41M(84M) 2.308ms"
+        },
+        {
+          "duration": 3.802,
+          "full": false,
+          "kind": "[1103.762s][info][gc] GC(167) Pause Remark 43M->43M(84M) 3.802ms"
+        },
+        {
+          "duration": 0.096,
+          "full": false,
+          "kind": "[1103.767s][info][gc] GC(167) Pause Cleanup 44M->44M(84M) 0.096ms"
+        }
+      ],
+      "count": 3,
+      "fullCount": 0,
+      "totalMs": 6.2059999999999995,
+      "maxMs": 3.802
+    },
+    {
+      "tag": "matrix3-baseline-2-50-0",
+      "service": "gateway",
+      "pauses": [
+        {
+          "duration": 3.559,
+          "full": false,
+          "kind": "[1063.553s][info][gc] GC(86) Pause Young (Concurrent Start) (G1 Evacuation Pause) 63M->33M(69M) 3.559ms"
+        },
+        {
+          "duration": 7.183,
+          "full": false,
+          "kind": "[1063.583s][info][gc] GC(87) Pause Remark 33M->33M(69M) 7.183ms"
+        },
+        {
+          "duration": 0.127,
+          "full": false,
+          "kind": "[1063.599s][info][gc] GC(87) Pause Cleanup 34M->34M(69M) 0.127ms"
+        }
+      ],
+      "count": 3,
+      "fullCount": 0,
+      "totalMs": 10.869000000000002,
+      "maxMs": 7.183
+    },
+    {
+      "tag": "matrix3-baseline-2-50-0",
+      "service": "nacos",
+      "pauses": [],
+      "count": 0,
+      "fullCount": 0,
+      "totalMs": 0,
+      "maxMs": 0
+    },
+    {
+      "tag": "matrix3-baseline-2-50-0",
+      "service": "injector",
+      "pauses": [],
+      "count": 0,
+      "fullCount": 0,
+      "totalMs": 0,
+      "maxMs": 0
+    },
+    {
+      "tag": "matrix3-baseline-2-50-1",
+      "service": "ticket",
+      "pauses": [
+        {
+          "duration": 8.02,
+          "full": false,
+          "kind": "[98.596s][info][gc] GC(186) Pause Remark 61M->61M(110M) 8.020ms"
+        },
+        {
+          "duration": 0.137,
+          "full": false,
+          "kind": "[98.607s][info][gc] GC(186) Pause Cleanup 63M->63M(110M) 0.137ms"
+        },
+        {
+          "duration": 2.895,
+          "full": false,
+          "kind": "[98.848s][info][gc] GC(187) Pause Young (Prepare Mixed) (G1 Evacuation Pause) 101M->59M(110M) 2.895ms"
+        }
+      ],
+      "count": 3,
+      "fullCount": 0,
+      "totalMs": 11.052,
+      "maxMs": 8.02
+    },
+    {
+      "tag": "matrix3-baseline-2-50-1",
+      "service": "user",
+      "pauses": [],
+      "count": 0,
+      "fullCount": 0,
+      "totalMs": 0,
+      "maxMs": 0
+    },
+    {
+      "tag": "matrix3-baseline-2-50-1",
+      "service": "order",
+      "pauses": [
+        {
+          "duration": 1.794,
+          "full": false,
+          "kind": "[1112.799s][info][gc] GC(168) Pause Young (Normal) (G1 Evacuation Pause) 76M->41M(84M) 1.794ms"
+        }
+      ],
+      "count": 1,
+      "fullCount": 0,
+      "totalMs": 1.794,
+      "maxMs": 1.794
+    },
+    {
+      "tag": "matrix3-baseline-2-50-1",
+      "service": "gateway",
+      "pauses": [],
+      "count": 0,
+      "fullCount": 0,
+      "totalMs": 0,
+      "maxMs": 0
+    },
+    {
+      "tag": "matrix3-baseline-2-50-1",
+      "service": "nacos",
+      "pauses": [],
+      "count": 0,
+      "fullCount": 0,
+      "totalMs": 0,
+      "maxMs": 0
+    },
+    {
+      "tag": "matrix3-baseline-2-50-1",
+      "service": "injector",
+      "pauses": [
+        {
+          "duration": 3.155,
+          "full": false,
+          "kind": "[1001.484s][info][gc] GC(27) Pause Young (Normal) (G1 Evacuation Pause) 56M->27M(64M) 3.155ms"
+        }
+      ],
+      "count": 1,
+      "fullCount": 0,
+      "totalMs": 3.155,
+      "maxMs": 3.155
+    },
+    {
+      "tag": "matrix3-baseline-2-100-0",
+      "service": "ticket",
+      "pauses": [
+        {
+          "duration": 0.147,
+          "full": false,
+          "kind": "[107.427s][info][gc] GC(190) Pause Cleanup 70M->70M(115M) 0.147ms"
+        },
+        {
+          "duration": 3.982,
+          "full": false,
+          "kind": "[107.569s][info][gc] GC(191) Pause Young (Normal) (G1 Evacuation Pause) 98M->65M(115M) 3.982ms"
+        },
+        {
+          "duration": 4.003,
+          "full": false,
+          "kind": "[107.801s][info][gc] GC(192) Pause Young (Concurrent Start) (G1 Evacuation Pause) 101M->67M(115M) 4.003ms"
+        },
+        {
+          "duration": 15.212,
+          "full": false,
+          "kind": "[107.858s][info][gc] GC(193) Pause Remark 71M->71M(122M) 15.212ms"
+        },
+        {
+          "duration": 0.152,
+          "full": false,
+          "kind": "[107.875s][info][gc] GC(193) Pause Cleanup 74M->74M(122M) 0.152ms"
+        },
+        {
+          "duration": 3.475,
+          "full": false,
+          "kind": "[108.096s][info][gc] GC(194) Pause Young (Prepare Mixed) (G1 Evacuation Pause) 104M->66M(122M) 3.475ms"
+        }
+      ],
+      "count": 6,
+      "fullCount": 0,
+      "totalMs": 26.971000000000004,
+      "maxMs": 15.212
+    },
+    {
+      "tag": "matrix3-baseline-2-100-0",
+      "service": "user",
+      "pauses": [],
+      "count": 0,
+      "fullCount": 0,
+      "totalMs": 0,
+      "maxMs": 0
+    },
+    {
+      "tag": "matrix3-baseline-2-100-0",
+      "service": "order",
+      "pauses": [
+        {
+          "duration": 2.188,
+          "full": false,
+          "kind": "[1122.242s][info][gc] GC(171) Pause Young (Normal) (G1 Evacuation Pause) 76M->41M(84M) 2.188ms"
+        }
+      ],
+      "count": 1,
+      "fullCount": 0,
+      "totalMs": 2.188,
+      "maxMs": 2.188
+    },
+    {
+      "tag": "matrix3-baseline-2-100-0",
+      "service": "gateway",
+      "pauses": [
+        {
+          "duration": 4.787,
+          "full": false,
+          "kind": "[1081.302s][info][gc] GC(88) Pause Young (Prepare Mixed) (G1 Evacuation Pause) 62M->34M(69M) 4.787ms"
+        }
+      ],
+      "count": 1,
+      "fullCount": 0,
+      "totalMs": 4.787,
+      "maxMs": 4.787
+    },
+    {
+      "tag": "matrix3-baseline-2-100-0",
+      "service": "nacos",
+      "pauses": [],
+      "count": 0,
+      "fullCount": 0,
+      "totalMs": 0,
+      "maxMs": 0
+    },
+    {
+      "tag": "matrix3-baseline-2-100-0",
+      "service": "injector",
+      "pauses": [],
+      "count": 0,
+      "fullCount": 0,
+      "totalMs": 0,
+      "maxMs": 0
+    },
+    {
+      "tag": "matrix3-baseline-2-100-1",
+      "service": "ticket",
+      "pauses": [
+        {
+          "duration": 2.519,
+          "full": false,
+          "kind": "[117.351s][info][gc] GC(196) Pause Young (Concurrent Start) (G1 Evacuation Pause) 111M->67M(122M) 2.519ms"
+        },
+        {
+          "duration": 10.078,
+          "full": false,
+          "kind": "[117.399s][info][gc] GC(197) Pause Remark 74M->74M(127M) 10.078ms"
+        },
+        {
+          "duration": 0.198,
+          "full": false,
+          "kind": "[117.414s][info][gc] GC(197) Pause Cleanup 77M->77M(127M) 0.198ms"
+        },
+        {
+          "duration": 3.413,
+          "full": false,
+          "kind": "[117.611s][info][gc] GC(198) Pause Young (Prepare Mixed) (G1 Evacuation Pause) 111M->67M(127M) 3.413ms"
+        }
+      ],
+      "count": 4,
+      "fullCount": 0,
+      "totalMs": 16.208,
+      "maxMs": 10.078
+    },
+    {
+      "tag": "matrix3-baseline-2-100-1",
+      "service": "user",
+      "pauses": [],
+      "count": 0,
+      "fullCount": 0,
+      "totalMs": 0,
+      "maxMs": 0
+    },
+    {
+      "tag": "matrix3-baseline-2-100-1",
+      "service": "order",
+      "pauses": [
+        {
+          "duration": 2.77,
+          "full": false,
+          "kind": "[1131.864s][info][gc] GC(172) Pause Young (Concurrent Start) (G1 Evacuation Pause) 76M->41M(84M) 2.770ms"
+        },
+        {
+          "duration": 5.905,
+          "full": false,
+          "kind": "[1131.901s][info][gc] GC(173) Pause Remark 43M->43M(84M) 5.905ms"
+        },
+        {
+          "duration": 0.144,
+          "full": false,
+          "kind": "[1131.915s][info][gc] GC(173) Pause Cleanup 45M->45M(84M) 0.144ms"
+        }
+      ],
+      "count": 3,
+      "fullCount": 0,
+      "totalMs": 8.819,
+      "maxMs": 5.905
+    },
+    {
+      "tag": "matrix3-baseline-2-100-1",
+      "service": "gateway",
+      "pauses": [
+        {
+          "duration": 8.135,
+          "full": false,
+          "kind": "[1091.470s][info][gc] GC(89) Pause Young (Mixed) (G1 Evacuation Pause) 61M->34M(69M) 8.135ms"
+        }
+      ],
+      "count": 1,
+      "fullCount": 0,
+      "totalMs": 8.135,
+      "maxMs": 8.135
+    },
+    {
+      "tag": "matrix3-baseline-2-100-1",
+      "service": "nacos",
+      "pauses": [],
+      "count": 0,
+      "fullCount": 0,
+      "totalMs": 0,
+      "maxMs": 0
+    },
+    {
+      "tag": "matrix3-baseline-2-100-1",
+      "service": "injector",
+      "pauses": [],
+      "count": 0,
+      "fullCount": 0,
+      "totalMs": 0,
+      "maxMs": 0
+    },
+    {
+      "tag": "matrix3-candidate-2-20-0",
+      "service": "ticket",
+      "pauses": [
+        {
+          "duration": 2.383,
+          "full": false,
+          "kind": "[60.821s][info][gc] GC(161) Pause Young (Prepare Mixed) (G1 Evacuation Pause) 91M->55M(102M) 2.383ms"
+        },
+        {
+          "duration": 3.0,
+          "full": false,
+          "kind": "[61.035s][info][gc] GC(162) Pause Young (Mixed) (G1 Evacuation Pause) 92M->54M(102M) 3.000ms"
+        }
+      ],
+      "count": 2,
+      "fullCount": 0,
+      "totalMs": 5.383,
+      "maxMs": 3.0
+    },
+    {
+      "tag": "matrix3-candidate-2-20-0",
+      "service": "user",
+      "pauses": [],
+      "count": 0,
+      "fullCount": 0,
+      "totalMs": 0,
+      "maxMs": 0
+    },
+    {
+      "tag": "matrix3-candidate-2-20-0",
+      "service": "order",
+      "pauses": [],
+      "count": 0,
+      "fullCount": 0,
+      "totalMs": 0,
+      "maxMs": 0
+    },
+    {
+      "tag": "matrix3-candidate-2-20-0",
+      "service": "gateway",
+      "pauses": [],
+      "count": 0,
+      "fullCount": 0,
+      "totalMs": 0,
+      "maxMs": 0
+    },
+    {
+      "tag": "matrix3-candidate-2-20-0",
+      "service": "nacos",
+      "pauses": [],
+      "count": 0,
+      "fullCount": 0,
+      "totalMs": 0,
+      "maxMs": 0
+    },
+    {
+      "tag": "matrix3-candidate-2-20-0",
+      "service": "injector",
+      "pauses": [],
+      "count": 0,
+      "fullCount": 0,
+      "totalMs": 0,
+      "maxMs": 0
+    },
+    {
+      "tag": "matrix3-candidate-2-20-1",
+      "service": "ticket",
+      "pauses": [
+        {
+          "duration": 2.643,
+          "full": false,
+          "kind": "[68.523s][info][gc] GC(165) Pause Young (Prepare Mixed) (G1 Evacuation Pause) 92M->54M(102M) 2.643ms"
+        },
+        {
+          "duration": 3.744,
+          "full": false,
+          "kind": "[68.753s][info][gc] GC(166) Pause Young (Mixed) (G1 Evacuation Pause) 92M->54M(102M) 3.744ms"
+        }
+      ],
+      "count": 2,
+      "fullCount": 0,
+      "totalMs": 6.3870000000000005,
+      "maxMs": 3.744
+    },
+    {
+      "tag": "matrix3-candidate-2-20-1",
+      "service": "user",
+      "pauses": [],
+      "count": 0,
+      "fullCount": 0,
+      "totalMs": 0,
+      "maxMs": 0
+    },
+    {
+      "tag": "matrix3-candidate-2-20-1",
+      "service": "order",
+      "pauses": [
+        {
+          "duration": 1.959,
+          "full": false,
+          "kind": "[1246.013s][info][gc] GC(178) Pause Young (Concurrent Start) (G1 Evacuation Pause) 76M->41M(84M) 1.959ms"
+        },
+        {
+          "duration": 5.067,
+          "full": false,
+          "kind": "[1246.041s][info][gc] GC(179) Pause Remark 42M->42M(84M) 5.067ms"
+        },
+        {
+          "duration": 0.155,
+          "full": false,
+          "kind": "[1246.050s][info][gc] GC(179) Pause Cleanup 43M->43M(84M) 0.155ms"
+        }
+      ],
+      "count": 3,
+      "fullCount": 0,
+      "totalMs": 7.181,
+      "maxMs": 5.067
+    },
+    {
+      "tag": "matrix3-candidate-2-20-1",
+      "service": "gateway",
+      "pauses": [
+        {
+          "duration": 3.063,
+          "full": false,
+          "kind": "[1205.837s][info][gc] GC(93) Pause Young (Mixed) (G1 Evacuation Pause) 62M->32M(69M) 3.063ms"
+        }
+      ],
+      "count": 1,
+      "fullCount": 0,
+      "totalMs": 3.063,
+      "maxMs": 3.063
+    },
+    {
+      "tag": "matrix3-candidate-2-20-1",
+      "service": "nacos",
+      "pauses": [],
+      "count": 0,
+      "fullCount": 0,
+      "totalMs": 0,
+      "maxMs": 0
+    },
+    {
+      "tag": "matrix3-candidate-2-20-1",
+      "service": "injector",
+      "pauses": [],
+      "count": 0,
+      "fullCount": 0,
+      "totalMs": 0,
+      "maxMs": 0
+    },
+    {
+      "tag": "matrix3-candidate-2-50-0",
+      "service": "ticket",
+      "pauses": [
+        {
+          "duration": 3.292,
+          "full": false,
+          "kind": "[76.297s][info][gc] GC(169) Pause Young (Prepare Mixed) (G1 Evacuation Pause) 92M->59M(102M) 3.292ms"
+        },
+        {
+          "duration": 3.776,
+          "full": false,
+          "kind": "[76.464s][info][gc] GC(170) Pause Young (Mixed) (G1 Evacuation Pause) 90M->60M(102M) 3.776ms"
+        },
+        {
+          "duration": 4.092,
+          "full": false,
+          "kind": "[76.733s][info][gc] GC(171) Pause Young (Concurrent Start) (G1 Evacuation Pause) 93M->60M(102M) 4.092ms"
+        },
+        {
+          "duration": 27.773,
+          "full": false,
+          "kind": "[76.817s][info][gc] GC(172) Pause Remark 65M->65M(110M) 27.773ms"
+        },
+        {
+          "duration": 0.296,
+          "full": false,
+          "kind": "[76.850s][info][gc] GC(172) Pause Cleanup 66M->66M(110M) 0.296ms"
+        }
+      ],
+      "count": 5,
+      "fullCount": 0,
+      "totalMs": 39.229,
+      "maxMs": 27.773
+    },
+    {
+      "tag": "matrix3-candidate-2-50-0",
+      "service": "user",
+      "pauses": [],
+      "count": 0,
+      "fullCount": 0,
+      "totalMs": 0,
+      "maxMs": 0
+    },
+    {
+      "tag": "matrix3-candidate-2-50-0",
+      "service": "order",
+      "pauses": [
+        {
+          "duration": 1.248,
+          "full": false,
+          "kind": "[1253.934s][info][gc] GC(180) Pause Young (Normal) (G1 Evacuation Pause) 76M->41M(84M) 1.248ms"
+        }
+      ],
+      "count": 1,
+      "fullCount": 0,
+      "totalMs": 1.248,
+      "maxMs": 1.248
+    },
+    {
+      "tag": "matrix3-candidate-2-50-0",
+      "service": "gateway",
+      "pauses": [],
+      "count": 0,
+      "fullCount": 0,
+      "totalMs": 0,
+      "maxMs": 0
+    },
+    {
+      "tag": "matrix3-candidate-2-50-0",
+      "service": "nacos",
+      "pauses": [],
+      "count": 0,
+      "fullCount": 0,
+      "totalMs": 0,
+      "maxMs": 0
+    },
+    {
+      "tag": "matrix3-candidate-2-50-0",
+      "service": "injector",
+      "pauses": [],
+      "count": 0,
+      "fullCount": 0,
+      "totalMs": 0,
+      "maxMs": 0
+    },
+    {
+      "tag": "matrix3-candidate-2-50-1",
+      "service": "ticket",
+      "pauses": [
+        {
+          "duration": 1.925,
+          "full": false,
+          "kind": "[84.525s][info][gc] GC(174) Pause Young (Mixed) (G1 Evacuation Pause) 102M->60M(110M) 1.925ms"
+        },
+        {
+          "duration": 3.224,
+          "full": false,
+          "kind": "[84.811s][info][gc] GC(175) Pause Young (Concurrent Start) (G1 Evacuation Pause) 99M->60M(110M) 3.224ms"
+        },
+        {
+          "duration": 14.486,
+          "full": false,
+          "kind": "[84.857s][info][gc] GC(176) Pause Remark 63M->63M(110M) 14.486ms"
+        },
+        {
+          "duration": 0.12,
+          "full": false,
+          "kind": "[84.874s][info][gc] GC(176) Pause Cleanup 66M->66M(110M) 0.120ms"
+        }
+      ],
+      "count": 4,
+      "fullCount": 0,
+      "totalMs": 19.755000000000003,
+      "maxMs": 14.486
+    },
+    {
+      "tag": "matrix3-candidate-2-50-1",
+      "service": "user",
+      "pauses": [],
+      "count": 0,
+      "fullCount": 0,
+      "totalMs": 0,
+      "maxMs": 0
+    },
+    {
+      "tag": "matrix3-candidate-2-50-1",
+      "service": "order",
+      "pauses": [
+        {
+          "duration": 2.122,
+          "full": false,
+          "kind": "[1262.139s][info][gc] GC(181) Pause Young (Concurrent Start) (G1 Evacuation Pause) 76M->41M(84M) 2.122ms"
+        },
+        {
+          "duration": 6.401,
+          "full": false,
+          "kind": "[1262.167s][info][gc] GC(182) Pause Remark 43M->43M(84M) 6.401ms"
+        },
+        {
+          "duration": 0.104,
+          "full": false,
+          "kind": "[1262.177s][info][gc] GC(182) Pause Cleanup 43M->43M(84M) 0.104ms"
+        }
+      ],
+      "count": 3,
+      "fullCount": 0,
+      "totalMs": 8.626999999999999,
+      "maxMs": 6.401
+    },
+    {
+      "tag": "matrix3-candidate-2-50-1",
+      "service": "gateway",
+      "pauses": [
+        {
+          "duration": 3.755,
+          "full": false,
+          "kind": "[1221.956s][info][gc] GC(94) Pause Young (Concurrent Start) (G1 Evacuation Pause) 63M->33M(69M) 3.755ms"
+        },
+        {
+          "duration": 7.655,
+          "full": false,
+          "kind": "[1221.985s][info][gc] GC(95) Pause Remark 34M->34M(69M) 7.655ms"
+        },
+        {
+          "duration": 0.154,
+          "full": false,
+          "kind": "[1222.001s][info][gc] GC(95) Pause Cleanup 34M->34M(69M) 0.154ms"
+        }
+      ],
+      "count": 3,
+      "fullCount": 0,
+      "totalMs": 11.564,
+      "maxMs": 7.655
+    },
+    {
+      "tag": "matrix3-candidate-2-50-1",
+      "service": "nacos",
+      "pauses": [],
+      "count": 0,
+      "fullCount": 0,
+      "totalMs": 0,
+      "maxMs": 0
+    },
+    {
+      "tag": "matrix3-candidate-2-50-1",
+      "service": "injector",
+      "pauses": [],
+      "count": 0,
+      "fullCount": 0,
+      "totalMs": 0,
+      "maxMs": 0
+    },
+    {
+      "tag": "matrix3-candidate-2-100-0",
+      "service": "ticket",
+      "pauses": [
+        {
+          "duration": 3.179,
+          "full": false,
+          "kind": "[92.438s][info][gc] GC(178) Pause Young (Mixed) (G1 Evacuation Pause) 102M->64M(110M) 3.179ms"
+        },
+        {
+          "duration": 4.332,
+          "full": false,
+          "kind": "[92.540s][info][gc] GC(179) Pause Young (Concurrent Start) (G1 Evacuation Pause) 97M->67M(110M) 4.332ms"
+        },
+        {
+          "duration": 15.254,
+          "full": false,
+          "kind": "[92.599s][info][gc] GC(180) Pause Remark 75M->75M(129M) 15.254ms"
+        },
+        {
+          "duration": 0.137,
+          "full": false,
+          "kind": "[92.617s][info][gc] GC(180) Pause Cleanup 78M->78M(129M) 0.137ms"
+        },
+        {
+          "duration": 2.799,
+          "full": false,
+          "kind": "[92.773s][info][gc] GC(181) Pause Young (Prepare Mixed) (G1 Evacuation Pause) 97M->68M(129M) 2.799ms"
+        }
+      ],
+      "count": 5,
+      "fullCount": 0,
+      "totalMs": 25.701,
+      "maxMs": 15.254
+    },
+    {
+      "tag": "matrix3-candidate-2-100-0",
+      "service": "user",
+      "pauses": [],
+      "count": 0,
+      "fullCount": 0,
+      "totalMs": 0,
+      "maxMs": 0
+    },
+    {
+      "tag": "matrix3-candidate-2-100-0",
+      "service": "order",
+      "pauses": [
+        {
+          "duration": 1.848,
+          "full": false,
+          "kind": "[1270.127s][info][gc] GC(183) Pause Young (Normal) (G1 Evacuation Pause) 76M->41M(84M) 1.848ms"
+        }
+      ],
+      "count": 1,
+      "fullCount": 0,
+      "totalMs": 1.848,
+      "maxMs": 1.848
+    },
+    {
+      "tag": "matrix3-candidate-2-100-0",
+      "service": "gateway",
+      "pauses": [],
+      "count": 0,
+      "fullCount": 0,
+      "totalMs": 0,
+      "maxMs": 0
+    },
+    {
+      "tag": "matrix3-candidate-2-100-0",
+      "service": "nacos",
+      "pauses": [],
+      "count": 0,
+      "fullCount": 0,
+      "totalMs": 0,
+      "maxMs": 0
+    },
+    {
+      "tag": "matrix3-candidate-2-100-0",
+      "service": "injector",
+      "pauses": [
+        {
+          "duration": 7.858,
+          "full": false,
+          "kind": "[1159.838s][info][gc] GC(30) Pause Young (Normal) (G1 Evacuation Pause) 56M->29M(64M) 7.858ms"
+        }
+      ],
+      "count": 1,
+      "fullCount": 0,
+      "totalMs": 7.858,
+      "maxMs": 7.858
+    },
+    {
+      "tag": "matrix3-candidate-2-100-1",
+      "service": "ticket",
+      "pauses": [
+        {
+          "duration": 11.671,
+          "full": false,
+          "kind": "[103.133s][info][gc] GC(184) Pause Remark 76M->76M(130M) 11.671ms"
+        },
+        {
+          "duration": 0.159,
+          "full": false,
+          "kind": "[103.148s][info][gc] GC(184) Pause Cleanup 81M->81M(130M) 0.159ms"
+        },
+        {
+          "duration": 2.665,
+          "full": false,
+          "kind": "[103.396s][info][gc] GC(185) Pause Young (Prepare Mixed) (G1 Evacuation Pause) 118M->69M(130M) 2.665ms"
+        },
+        {
+          "duration": 2.581,
+          "full": false,
+          "kind": "[103.757s][info][gc] GC(186) Pause Young (Mixed) (G1 Evacuation Pause) 117M->68M(130M) 2.581ms"
+        }
+      ],
+      "count": 4,
+      "fullCount": 0,
+      "totalMs": 17.076,
+      "maxMs": 11.671
+    },
+    {
+      "tag": "matrix3-candidate-2-100-1",
+      "service": "user",
+      "pauses": [
+        {
+          "duration": 1.932,
+          "full": false,
+          "kind": "[1304.865s][info][gc] GC(221) Pause Young (Prepare Mixed) (G1 Evacuation Pause) 113M->66M(124M) 1.932ms"
+        }
+      ],
+      "count": 1,
+      "fullCount": 0,
+      "totalMs": 1.932,
+      "maxMs": 1.932
+    },
+    {
+      "tag": "matrix3-candidate-2-100-1",
+      "service": "order",
+      "pauses": [
+        {
+          "duration": 1.53,
+          "full": false,
+          "kind": "[1281.291s][info][gc] GC(186) Pause Young (Normal) (G1 Evacuation Pause) 76M->41M(84M) 1.530ms"
+        }
+      ],
+      "count": 1,
+      "fullCount": 0,
+      "totalMs": 1.53,
+      "maxMs": 1.53
+    },
+    {
+      "tag": "matrix3-candidate-2-100-1",
+      "service": "gateway",
+      "pauses": [
+        {
+          "duration": 5.015,
+          "full": false,
+          "kind": "[1240.329s][info][gc] GC(96) Pause Young (Prepare Mixed) (G1 Evacuation Pause) 62M->34M(69M) 5.015ms"
+        }
+      ],
+      "count": 1,
+      "fullCount": 0,
+      "totalMs": 5.015,
+      "maxMs": 5.015
+    },
+    {
+      "tag": "matrix3-candidate-2-100-1",
+      "service": "nacos",
+      "pauses": [],
+      "count": 0,
+      "fullCount": 0,
+      "totalMs": 0,
+      "maxMs": 0
+    },
+    {
+      "tag": "matrix3-candidate-2-100-1",
+      "service": "injector",
+      "pauses": [],
+      "count": 0,
+      "fullCount": 0,
+      "totalMs": 0,
+      "maxMs": 0
+    }
+  ],
+  "gcClockAlignment": "OS process creation plus JVM uptime; approximate at subsecond boundaries",
+  "deletedOrderTimeoutsInFormal": 0
+}

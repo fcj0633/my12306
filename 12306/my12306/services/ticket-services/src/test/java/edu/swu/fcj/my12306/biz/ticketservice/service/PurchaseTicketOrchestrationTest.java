@@ -8,6 +8,8 @@ import edu.swu.fcj.my12306.biz.ticketservice.common.cache.RedisCacheHelper;
 import edu.swu.fcj.my12306.biz.ticketservice.common.id.SnowflakeIdGenerator;
 import edu.swu.fcj.my12306.biz.ticketservice.common.chain.AbstractChainContext;
 import edu.swu.fcj.my12306.biz.ticketservice.dto.domain.PurchaseReservationResult;
+import edu.swu.fcj.my12306.biz.ticketservice.dto.domain.PurchaseMetadata;
+import edu.swu.fcj.my12306.biz.ticketservice.service.impl.PurchaseMetadataService;
 import edu.swu.fcj.my12306.biz.ticketservice.dto.domain.PurchaseTicketPassengerDetailDTO;
 import edu.swu.fcj.my12306.biz.ticketservice.dto.req.PurchaseTicketReqDTO;
 import edu.swu.fcj.my12306.biz.ticketservice.dto.req.TicketCallbackReqDTO;
@@ -18,6 +20,10 @@ import edu.swu.fcj.my12306.biz.ticketservice.remote.dto.TicketOrderCreateRemoteR
 import edu.swu.fcj.my12306.biz.ticketservice.service.handler.ticket.tokenbucket.TicketAvailabilityTokenBucket;
 import edu.swu.fcj.my12306.biz.ticketservice.service.impl.PurchaseTicketServiceImpl;
 import edu.swu.fcj.my12306.biz.ticketservice.service.impl.PurchaseTicketTxService;
+import edu.swu.fcj.my12306.biz.ticketservice.service.handler.ticket.seat.CarriageDirectory;
+import edu.swu.fcj.my12306.biz.ticketservice.service.handler.ticket.seat.CarriageUnavailableException;
+import edu.swu.fcj.my12306.biz.ticketservice.service.handler.ticket.seat.ReservationDatabaseLockException;
+import org.springframework.dao.CannotAcquireLockException;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -60,6 +66,8 @@ class PurchaseTicketOrchestrationTest {
     @Mock private RLock seatType2Lock;
     /** P2-5：orderSn 现在来自这个生成器。测试对 orderSn 只要求非空，固定值即可保持确定性。 */
     @Mock private SnowflakeIdGenerator snowflakeIdGenerator;
+    @Mock private CarriageDirectory directory;
+    @Mock private PurchaseMetadataService metadataService;
 
     private PurchaseTicketServiceImpl purchaseService;
 
@@ -67,15 +75,17 @@ class PurchaseTicketOrchestrationTest {
     void setUp() {
         purchaseService = new PurchaseTicketServiceImpl(redissonClient, chainContext, tokenBucket, txService,
                 userRemoteService, orderRemoteService, ticketCallbackService, redisCacheHelper,
-                new SimpleMeterRegistry(), snowflakeIdGenerator);
+                new SimpleMeterRegistry(), snowflakeIdGenerator, directory, metadataService);
+        lenient().when(metadataService.prepare(any())).thenReturn(new PurchaseMetadata("G1", java.time.Instant.EPOCH, java.time.Instant.EPOCH, Map.of(0, 100, 2, 200)));
+        lenient().when(directory.carriages(eq(1L), any())).thenReturn(List.of("07"));
         lenient().when(snowflakeIdGenerator.nextId()).thenReturn("1700000000000000001");
         UserContext.setUser(UserInfoDTO.builder().userId("1001").username("tester").build());
         when(tokenBucket.takeToken(eq(1L), anyString(), anyString(), anyMap())).thenReturn(true);
         when(redissonClient.getLock("my12306-ticket-service:lock:purchase_tickets_user_tester_1"))
                 .thenReturn(userLock);
-        when(redissonClient.getLock("my12306-ticket-service:lock:purchase_tickets_1_0"))
+        when(redissonClient.getLock("my12306-ticket-service:lock:purchase_tickets_carriage_1_0_07"))
                 .thenReturn(seatType0Lock);
-        lenient().when(redissonClient.getLock("my12306-ticket-service:lock:purchase_tickets_1_2"))
+        lenient().when(redissonClient.getLock("my12306-ticket-service:lock:purchase_tickets_carriage_1_2_07"))
                 .thenReturn(seatType2Lock);
         when(userLock.isHeldByCurrentThread()).thenReturn(true);
         when(seatType0Lock.isHeldByCurrentThread()).thenReturn(true);
@@ -98,20 +108,32 @@ class PurchaseTicketOrchestrationTest {
     }
 
     @Test
+    @org.mockito.junit.jupiter.MockitoSettings(strictness = org.mockito.quality.Strictness.LENIENT)
+    void missingMetadataReturnsTokenWithoutAcquiringResourceLocks() {
+        when(metadataService.prepare(any())).thenThrow(new ServiceException("车票价格数据缺失"));
+        assertThrows(ServiceException.class, () -> purchaseService.purchaseTickets(requestWithSeatTypes(0)));
+        verify(tokenBucket).returnToken(eq(1L), anyString(), anyString(), anyMap());
+        verify(userLock, never()).lock();
+        verify(seatType0Lock, never()).lock();
+        verify(txService, never()).doPurchaseInTransaction(any(), anyString(), anyString(), anyString(), anyMap(), anyMap(), any());
+    }
+
+    @Test
     void remoteCallsStayOutsideSeatLocks() {
         PurchaseTicketReqDTO request = requestWithSeatTypes(2, 0);
         stubReservationAndSuccessfulOrder();
 
         purchaseService.purchaseTickets(request);
 
-        InOrder order = inOrder(tokenBucket, userRemoteService, userLock, seatType0Lock,
+        InOrder order = inOrder(tokenBucket, userRemoteService, metadataService, userLock, seatType0Lock,
                 seatType2Lock, txService, orderRemoteService);
         order.verify(tokenBucket).takeToken(1L, "北京南", "宁波", Map.of(0, 1, 2, 1));
         order.verify(userRemoteService).listPassengerQueryByIds(eq("tester"), any());
+        order.verify(metadataService).prepare(request);
         order.verify(userLock).lock();
         order.verify(seatType0Lock).lock();
         order.verify(seatType2Lock).lock();
-        order.verify(txService).doPurchaseInTransaction(eq(request), eq("1001"), eq("tester"), anyString(), anyMap());
+        order.verify(txService).doPurchaseInTransaction(eq(request), eq("1001"), eq("tester"), anyString(), anyMap(), anyMap(), any());
         order.verify(seatType2Lock).unlock();
         order.verify(seatType0Lock).unlock();
         order.verify(userLock).unlock();
@@ -122,7 +144,7 @@ class PurchaseTicketOrchestrationTest {
     @Test
     void transactionFailureReturnsTokensOnce() {
         PurchaseTicketReqDTO request = requestWithSeatTypes(0, 2);
-        when(txService.doPurchaseInTransaction(eq(request), eq("1001"), eq("tester"), anyString(), anyMap()))
+        when(txService.doPurchaseInTransaction(eq(request), eq("1001"), eq("tester"), anyString(), anyMap(), anyMap(), any()))
                 .thenThrow(new ServiceException("本地事务失败"));
 
         assertThrows(ServiceException.class, () -> purchaseService.purchaseTickets(request));
@@ -156,6 +178,59 @@ class PurchaseTicketOrchestrationTest {
         verify(tokenBucket, never()).returnToken(any(), anyString(), anyString(), anyMap());
     }
 
+    @Test
+    void candidateMissStartsAnotherTransactionWithoutTakingAnotherToken() {
+        PurchaseTicketReqDTO request = requestWithSeatTypes(0);
+        when(directory.carriages(1L, 0)).thenReturn(List.of("07", "08"));
+        RLock next = org.mockito.Mockito.mock(RLock.class);
+        when(redissonClient.getLock("my12306-ticket-service:lock:purchase_tickets_carriage_1_0_08")).thenReturn(next);
+        when(next.isHeldByCurrentThread()).thenReturn(true);
+        stubReservationAndSuccessfulOrder();
+        when(txService.doPurchaseInTransaction(any(), anyString(), anyString(), anyString(), anyMap(), eq(Map.of(0,"07")), any()))
+                .thenThrow(new CarriageUnavailableException());
+        purchaseService.purchaseTickets(request);
+        verify(tokenBucket).takeToken(eq(1L), anyString(), anyString(), anyMap());
+        verify(tokenBucket, never()).returnToken(any(), anyString(), anyString(), anyMap());
+        InOrder order = inOrder(seatType0Lock, next, txService);
+        order.verify(seatType0Lock).lock();
+        order.verify(txService).doPurchaseInTransaction(any(), anyString(), anyString(), anyString(), anyMap(), eq(Map.of(0,"07")), any());
+        order.verify(seatType0Lock).unlock();
+        order.verify(next).lock();
+        order.verify(txService).doPurchaseInTransaction(any(), anyString(), anyString(), anyString(), anyMap(), eq(Map.of(0,"08")), any());
+        order.verify(next).unlock();
+    }
+
+    @Test
+    void candidateMissFallsBackWithSameResourceLocks() {
+        PurchaseTicketReqDTO request = requestWithSeatTypes(0);
+        stubReservationAndSuccessfulOrder();
+        when(txService.doPurchaseInTransaction(any(), anyString(), anyString(), anyString(), anyMap(), eq(Map.of(0,"07")), any()))
+                .thenThrow(new CarriageUnavailableException());
+        purchaseService.purchaseTickets(request);
+        verify(seatType0Lock, org.mockito.Mockito.times(2)).lock();
+        verify(txService).doPurchaseInTransaction(any(), anyString(), anyString(), anyString(), anyMap(), eq(Map.of()), any());
+    }
+
+    @Test
+    void translatedLockFailureRetriesAtMostTwiceAndReturnsTokenOnce() {
+        PurchaseTicketReqDTO request = requestWithSeatTypes(0);
+        when(txService.doPurchaseInTransaction(any(), anyString(), anyString(), anyString(), anyMap(), anyMap(), any()))
+                .thenThrow(new ReservationDatabaseLockException(new CannotAcquireLockException("lock timeout")));
+        assertThrows(CannotAcquireLockException.class, () -> purchaseService.purchaseTickets(request));
+        verify(txService, org.mockito.Mockito.times(3)).doPurchaseInTransaction(any(), anyString(), anyString(), anyString(), anyMap(), anyMap(), any());
+        verify(tokenBucket).returnToken(eq(1L), anyString(), anyString(), anyMap());
+        verify(seatType0Lock).unlock();
+    }
+
+    @Test
+    void transactionCompletionFailureIsNeverRetried() {
+        PurchaseTicketReqDTO request = requestWithSeatTypes(0);
+        when(txService.doPurchaseInTransaction(any(), anyString(), anyString(), anyString(), anyMap(), anyMap(), any()))
+                .thenThrow(new org.springframework.transaction.TransactionSystemException("commit outcome unknown"));
+        assertThrows(org.springframework.transaction.TransactionSystemException.class, () -> purchaseService.purchaseTickets(request));
+        verify(txService).doPurchaseInTransaction(any(), anyString(), anyString(), anyString(), anyMap(), anyMap(), any());
+    }
+
     private void stubReservationAndSuccessfulOrder() {
         stubReservation();
         when(orderRemoteService.createTicketOrder(any())).thenAnswer(invocation -> {
@@ -165,7 +240,7 @@ class PurchaseTicketOrchestrationTest {
     }
 
     private void stubReservation() {
-        when(txService.doPurchaseInTransaction(any(), anyString(), anyString(), anyString(), anyMap()))
+        when(txService.doPurchaseInTransaction(any(), anyString(), anyString(), anyString(), anyMap(), anyMap(), any()))
                 .thenAnswer(invocation -> {
                     String orderSn = invocation.getArgument(3);
                     TicketOrderCreateRemoteReqDTO orderRequest = TicketOrderCreateRemoteReqDTO.builder()

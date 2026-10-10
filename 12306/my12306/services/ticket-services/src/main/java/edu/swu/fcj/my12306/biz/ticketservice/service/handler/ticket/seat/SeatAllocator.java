@@ -18,6 +18,14 @@ public class SeatAllocator {
 
     private final SeatMapper seatMapper;
 
+    public List<SeatDO> allocateInCarriage(Long trainId, String departure, String arrival,
+                                          Integer seatType, String carriage, int count) {
+        if (count <= 0) throw new IllegalArgumentException("购票人数必须大于零");
+        List<SeatDO> seats = seatMapper.selectAvailableSeatsInCarriage(
+                trainId, departure, arrival, seatType, carriage, count);
+        return seats.size() == count ? seats : List.of();
+    }
+
     public List<SeatDO> allocate(Long trainId, String departure, String arrival, Integer seatType, int count) {
         if (count <= 0) {
             throw new IllegalArgumentException("购票人数必须大于零");
