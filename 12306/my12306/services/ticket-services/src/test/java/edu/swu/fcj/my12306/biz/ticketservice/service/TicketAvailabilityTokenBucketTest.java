@@ -48,6 +48,8 @@ class TicketAvailabilityTokenBucketTest {
     @Mock
     private RedisCacheHelper redisCacheHelper;
 
+    @Mock private edu.swu.fcj.my12306.biz.ticketservice.service.impl.InventoryRouteService routes;
+
     private SimpleMeterRegistry meterRegistry;
     private TicketAvailabilityTokenBucket tokenBucket;
 
@@ -55,7 +57,8 @@ class TicketAvailabilityTokenBucketTest {
     void setUp() {
         meterRegistry = new SimpleMeterRegistry();
         tokenBucket = new TicketAvailabilityTokenBucket(
-                stringRedisTemplate, seatMapper, trainMapper, redisCacheHelper, meterRegistry);
+                stringRedisTemplate, seatMapper, trainMapper, redisCacheHelper, meterRegistry, routes);
+        org.mockito.Mockito.lenient().when(routes.resolve(any(),any(),any())).thenReturn(new edu.swu.fcj.my12306.biz.ticketservice.dto.domain.SegmentRange(0,2));
         ReflectionTestUtils.setField(tokenBucket, "enabled", true);
         ReflectionTestUtils.setField(tokenBucket, "expireMinutes", 10L);
     }
@@ -89,9 +92,13 @@ class TicketAvailabilityTokenBucketTest {
             ((Runnable) invocation.getArgument(1)).run();
             return null;
         }).when(redisCacheHelper).executeWithLock(any(), any(Runnable.class));
-        when(seatMapper.selectMaps(any(QueryWrapper.class)))
-                .thenReturn(List.of(Map.of("seat_type", 0, "cnt", 10L),
-                        Map.of("seat_type", 2, "cnt", 810L)));
+        when(seatMapper.countAvailableSegments(1L))
+                .thenReturn(List.of(Map.of("segment_index", 0, "seat_type", 0, "cnt", 10L),
+                        Map.of("segment_index", 1, "seat_type", 2, "cnt", 810L)));
+        var a=new edu.swu.fcj.my12306.biz.ticketservice.dto.domain.InventoryStation();a.setStationIndex(0);a.setStationName("A");
+        var b=new edu.swu.fcj.my12306.biz.ticketservice.dto.domain.InventoryStation();b.setStationIndex(1);b.setStationName("B");
+        var c=new edu.swu.fcj.my12306.biz.ticketservice.dto.domain.InventoryStation();c.setStationIndex(2);c.setStationName("C");
+        when(routes.stations(1L)).thenReturn(List.of(a,b,c));
         TrainDO train = new TrainDO();
         train.setTrainType(0);
         when(trainMapper.selectById(1L)).thenReturn(train);
@@ -101,7 +108,7 @@ class TicketAvailabilityTokenBucketTest {
         @SuppressWarnings("unchecked")
         ArgumentCaptor<Map<Object, Object>> bucketCaptor = ArgumentCaptor.forClass(Map.class);
         verify(redisCacheHelper).hPutAllWithTtl(any(), bucketCaptor.capture(), eq(10L), eq(TimeUnit.MINUTES));
-        assertEquals(Map.of("0", "10", "1", "0", "2", "810"), bucketCaptor.getValue());
+        assertEquals(Map.of("0_0", "10", "0_1", "0", "0_2", "0", "1_0", "0", "1_1", "0", "1_2", "810"), bucketCaptor.getValue());
         assertEquals(1.0, meterRegistry.counter("my12306.token.load").count());
     }
 
@@ -116,7 +123,7 @@ class TicketAvailabilityTokenBucketTest {
 
     @Test
     void returnFailure_isSwallowedAndCountedAsDegrade() {
-        when(executeScript()).thenThrow(new IllegalStateException("redis unavailable"));
+        org.mockito.Mockito.doThrow(new IllegalStateException("redis unavailable")).when(redisCacheHelper).delete(any());
 
         tokenBucket.returnToken(1L, "北京南", "宁波", Map.of(0, 1));
 

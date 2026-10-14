@@ -1,0 +1,7 @@
+{
+  "mode" : "migrate",
+  "trains" : 1,
+  "physicalSeats" : 960,
+  "occupiedSegments" : 0,
+  "conflicts" : [ ]
+}

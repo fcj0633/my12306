@@ -1,0 +1,14 @@
+canal.instance.master.address=host.docker.internal:3306
+canal.instance.mysql.slaveId=19061
+canal.instance.dbUsername=REPLACE_WITH_ENV_GENERATED_USER
+canal.instance.dbPassword=REPLACE_WITH_ENV_GENERATED_PASSWORD
+canal.instance.defaultDatabaseName=REPLACE_WITH_DATABASE
+canal.instance.filter.regex=REPLACE_WITH_DATABASE\\.t_seat_segment
+canal.instance.connectionCharset=UTF-8
+canal.instance.gtidon=false
+# File checkpoint is mounted independently of the executable image.
+canal.instance.tsdb.enable=false
+canal.file.data.dir=/home/admin/canal-server/conf/inventory-state
+canal.file.flush.period=1000
+canal.instance.filter.query.dml=true
+canal.instance.filter.query.ddl=true

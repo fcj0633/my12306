@@ -49,6 +49,23 @@ management:
         my12306.purchase.order.remote: 0.5,0.95,0.99
 
 my12306:
+  cdc:
+    enabled: ${MY12306_CDC_ENABLED:false}
+    database: ${MY12306_CDC_DATABASE:}
+    namesrv: ${MY12306_CDC_NAMESRV:127.0.0.1:9876}
+    topic: ${MY12306_CDC_TOPIC:my12306-inventory-cache-cdc}
+    consumer-group: ${MY12306_CDC_CONSUMER_GROUP:my12306-inventory-cache-cdc-cg}
+  cache:
+    negative-seconds: ${MY12306_CACHE_NEGATIVE_SECONDS:30}
+    city-pair-seconds: ${MY12306_CACHE_CITY_PAIR_SECONDS:300}
+    snapshot-seconds: ${MY12306_CACHE_SNAPSHOT_SECONDS:86400}
+    long-seconds: ${MY12306_CACHE_LONG_SECONDS:1296000}
+    version-seconds: ${MY12306_CACHE_VERSION_SECONDS:120}
+  inventory:
+    remaining-ttl-seconds: ${MY12306_REMAINING_TTL_SECONDS:30}
+    cache-events:
+      enabled: ${MY12306_INVENTORY_CACHE_EVENTS_ENABLED:true}
+      retry-ms: ${MY12306_INVENTORY_CACHE_RETRY_MS:5000}
   availability:
     token-bucket:
       enabled: ${MY12306_TOKEN_BUCKET_ENABLED:true}

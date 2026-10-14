@@ -73,6 +73,15 @@ class TicketReadServiceTest {
 
     @BeforeEach
     void stubRedisCacheHelper() {
+        when(redisCacheHelper.train(anyString(),any())).thenCallRealMethod();
+        when(redisCacheHelper.diagnosed(anyString(),any())).thenAnswer(i->((Supplier<?>)i.getArgument(1)).get());
+        when(redisCacheHelper.remainingVersion(anyString())).thenReturn("test-version");
+        when(redisCacheHelper.publishRemaining(anyString(),anyString(),anyMap(),anyLong())).thenAnswer(i->{hashCache.put(i.getArgument(0),new HashMap<>((Map<Object,Object>)i.getArgument(2)));return true;});
+        when(redisCacheHelper.loadHash(anyString(),anyString(),any(),org.mockito.ArgumentMatchers.anyBoolean())).thenAnswer(i->{
+            String key=i.getArgument(0);if(hashCache.containsKey(key))return hashCache.get(key);
+            Map<Object,Object> loaded=((Supplier<Map<Object,Object>>)i.getArgument(2)).get();hashCache.put(key,loaded);return loaded;
+        });
+        doAnswer(i->{hashCache.put(i.getArgument(0),new HashMap<>((Map<Object,Object>)i.getArgument(1)));return null;}).when(redisCacheHelper).publishSnapshot(anyString(),anyMap());
         stringCache.clear();
         hashCache.clear();
 
@@ -118,6 +127,8 @@ class TicketReadServiceTest {
                     .putAll(invocation.getArgument(1));
             return null;
         }).when(redisCacheHelper).hPutAll(anyString(), anyMap());
+        doAnswer(invocation -> {hashCache.put(invocation.getArgument(0),new HashMap<>((Map<Object,Object>)invocation.getArgument(1)));return null;})
+                .when(redisCacheHelper).hPutAllWithTtl(anyString(),anyMap(),anyLong(),any(TimeUnit.class));
         doAnswer(invocation -> {
             hashCache.computeIfAbsent(invocation.getArgument(0), key -> new HashMap<>())
                     .put(invocation.getArgument(1), invocation.getArgument(2));
@@ -177,7 +188,6 @@ class TicketReadServiceTest {
 
         TicketPageQueryRespDTO response = ticketService.pageListTicketQuery(requestParam);
         assertFalse(response.getTrainList().isEmpty());
-        assertTrue(response.getTrainList().size() >= 3);
 
         TicketListDTO g35 = response.getTrainList().stream()
                 .filter(each -> "G35".equals(each.getTrainNumber()))

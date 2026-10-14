@@ -1,0 +1,16 @@
+spring:
+  application:
+    name: cdc-services
+  main:
+    web-application-type: none
+cdc:
+  source: ${CDC_SOURCE:inventory-mysql}
+  database: ${CDC_DATABASE:}
+  canal-host: ${CDC_CANAL_HOST:127.0.0.1}
+  canal-port: ${CDC_CANAL_PORT:11111}
+  destination: ${CDC_CANAL_DESTINATION:inventory}
+  canal-user: ${CDC_CANAL_USER:}
+  canal-password: ${CDC_CANAL_PASSWORD:}
+  namesrv: ${CDC_NAMESRV:127.0.0.1:9876}
+  topic: ${CDC_TOPIC:my12306-inventory-cache-cdc}
+  producer-group: ${CDC_PRODUCER_GROUP:my12306-inventory-cache-cdc-pg}

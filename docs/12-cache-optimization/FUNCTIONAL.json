@@ -1,0 +1,166 @@
+[
+  {
+    "elapsedSeconds": 14.6752362,
+    "scenario": "burst-city",
+    "model": "A",
+    "waves": 30,
+    "runId": "matrix_1791648027588193100",
+    "file": "A-burst-city-1-1791648098774443800.json",
+    "operations": {
+      "errors": {},
+      "query": {
+        "success": 1500,
+        "qps": 102.2130056073646,
+        "meanMs": 252.9921086,
+        "p50Ms": 234.6091,
+        "p95Ms": 510.6583,
+        "p99Ms": 755.1703
+      }
+    }
+  },
+  {
+    "elapsedSeconds": 12.042339,
+    "scenario": "burst-cold",
+    "model": "A",
+    "waves": 30,
+    "runId": "matrix_1791648027588193100",
+    "file": "A-burst-cold-1-1791648137524891800.json",
+    "operations": {
+      "errors": {},
+      "query": {
+        "success": 1500,
+        "qps": 124.56051934761179,
+        "meanMs": 227.12029746666667,
+        "p50Ms": 218.2085,
+        "p95Ms": 411.1212,
+        "p99Ms": 470.6409
+      }
+    }
+  },
+  {
+    "elapsedSeconds": 7.8753946,
+    "scenario": "burst-remaining",
+    "model": "A",
+    "waves": 30,
+    "runId": "matrix_1791648027588193100",
+    "file": "A-burst-remaining-1-1791648117413711500.json",
+    "operations": {
+      "errors": {},
+      "query": {
+        "success": 1500,
+        "qps": 190.4666465855565,
+        "meanMs": 146.5370106,
+        "p50Ms": 144.553,
+        "p95Ms": 253.5339,
+        "p99Ms": 322.0696
+      }
+    }
+  },
+  {
+    "model": "B",
+    "waves": 30,
+    "elapsedSeconds": 8.8333038,
+    "scenario": "burst-city",
+    "runId": "matrix_1791648027588193100",
+    "file": "B-burst-city-1-1791648109381504300.json",
+    "operations": {
+      "errors": {},
+      "query": {
+        "success": 1500,
+        "qps": 169.81188850314422,
+        "meanMs": 158.04060173333332,
+        "p50Ms": 151.4803,
+        "p95Ms": 317.6338,
+        "p99Ms": 408.1808
+      }
+    }
+  },
+  {
+    "scenario": "burst-cold",
+    "elapsedSeconds": 16.192135,
+    "waves": 30,
+    "model": "B",
+    "runId": "matrix_1791650505315451500",
+    "file": "B-burst-cold-1-1791650562287192300.json",
+    "operations": {
+      "errors": {},
+      "query": {
+        "success": 1500,
+        "qps": 92.63756755980604,
+        "meanMs": 316.92322786666665,
+        "p50Ms": 282.4638,
+        "p95Ms": 703.0106,
+        "p99Ms": 1015.2583
+      }
+    }
+  },
+  {
+    "model": "B",
+    "waves": 30,
+    "elapsedSeconds": 7.7259989,
+    "scenario": "burst-remaining",
+    "runId": "matrix_1791648027588193100",
+    "file": "B-burst-remaining-1-1791648125350883600.json",
+    "operations": {
+      "errors": {},
+      "query": {
+        "success": 1500,
+        "qps": 194.14965228638593,
+        "meanMs": 149.24323293333333,
+        "p50Ms": 147.9218,
+        "p95Ms": 250.3952,
+        "p99Ms": 299.7971
+      }
+    }
+  },
+  {
+    "model": "B",
+    "passed": [
+      "negative-expiry-rediscovers-data",
+      "negative-hash-expiry-rediscovers-data",
+      "database-timeout-not-cached",
+      "Redis-client-outage-not-negative",
+      "parse-error-not-negative",
+      "changed-missing-duplicate-nonce-rejected",
+      "hash-replacement-finite-TTL",
+      "overlap-deleted-adjacent-preserved",
+      "outbox-retry-converges",
+      "legacy-permanent-TTL-audit-and-idempotent-repair",
+      "deterministic-refill-race"
+    ],
+    "race": {
+      "cached": "809",
+      "stalePublished": false,
+      "scenario": "refill-race",
+      "response": {
+        "0": "10",
+        "1": "140",
+        "2": "809"
+      },
+      "database": 809,
+      "model": "B"
+    },
+    "scenario": "checks",
+    "runId": "matrix_1791650505315451500",
+    "file": "B-checks-1-1791650566137544100.json"
+  },
+  {
+    "scenario": "pulses",
+    "activeSegments": 0,
+    "commits": 20,
+    "model": "B",
+    "runId": "matrix_1791650505315451500",
+    "file": "B-pulses-1-1791650570278741500.json",
+    "operations": {
+      "commit-to-correct": {
+        "success": 20,
+        "qps": 20.0,
+        "meanMs": 171.14307,
+        "p50Ms": 162.6962,
+        "p95Ms": 211.422,
+        "p99Ms": 233.4807
+      },
+      "errors": {}
+    }
+  }
+]

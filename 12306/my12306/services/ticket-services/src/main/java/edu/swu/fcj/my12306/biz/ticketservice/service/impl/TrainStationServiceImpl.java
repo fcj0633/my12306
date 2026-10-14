@@ -32,7 +32,7 @@ public class TrainStationServiceImpl implements TrainStationService {
                 .lambdaQuery(TrainStationDO.class)
                 .eq(TrainStationDO::getTrainId, parseTrainId(trainId))
                 .orderByAsc(TrainStationDO::getSequence));
-        return trainStationDOList.stream().map(each -> {
+        return edu.swu.fcj.my12306.biz.ticketservice.common.toolkit.InventoryStationOrder.validateAndSort(trainStationDOList).stream().map(each -> {
             TrainStationQueryRespDTO result = new TrainStationQueryRespDTO();
             result.setSequence(each.getSequence());
             result.setDeparture(each.getDeparture());
@@ -48,9 +48,10 @@ public class TrainStationServiceImpl implements TrainStationService {
         List<TrainStationDO> trainStationDOList = trainStationMapper.selectList(Wrappers
                 .lambdaQuery(TrainStationDO.class)
                 .eq(TrainStationDO::getTrainId, parseTrainId(trainId))
-                .select(TrainStationDO::getDeparture)
+                .select(TrainStationDO::getDeparture, TrainStationDO::getSequence)
                 .orderByAsc(TrainStationDO::getSequence));
-        List<String> trainStationAllList = trainStationDOList.stream().map(TrainStationDO::getDeparture).toList();
+        List<String> trainStationAllList = edu.swu.fcj.my12306.biz.ticketservice.common.toolkit.InventoryStationOrder
+                .validateAndSort(trainStationDOList).stream().map(TrainStationDO::getDeparture).toList();
         return StationCalculateUtil.throughStation(trainStationAllList, departure, arrival);
     }
 

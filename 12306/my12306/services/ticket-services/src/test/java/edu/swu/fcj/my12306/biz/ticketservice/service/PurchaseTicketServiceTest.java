@@ -118,6 +118,7 @@ class PurchaseTicketServiceTest {
         UserContext.setUser(UserInfoDTO.builder().userId(TEST_USER_ID).username(TEST_USERNAME).realName("测试用户").build());
 
         // 缓存：直接把回源结果返回（等价于缓存未命中回源），测试不连接 Redis
+        when(redisCacheHelper.train(anyString(),any())).thenCallRealMethod();
         when(redisCacheHelper.safeGet(anyString(), ArgumentMatchers.<Supplier<String>>any(), anyLong(), any(TimeUnit.class)))
                 .thenAnswer(invocation -> ((Supplier<String>) invocation.getArgument(1)).get());
 
@@ -129,6 +130,7 @@ class PurchaseTicketServiceTest {
 
     @AfterEach
     void tearDown() {
+        org.awaitility.Awaitility.await().atMost(java.time.Duration.ofSeconds(10)).untilAsserted(() -> assertEquals(0,jdbcTemplate.queryForObject("SELECT COUNT(*) FROM t_inventory_cache_event WHERE train_id=1",Integer.class)));
         UserContext.removeUser();
         // Include logically deleted tickets, but preserve every historical test row.
         // Mapper.delete is a logical delete, so it cannot remove test fixtures physically.
@@ -144,12 +146,7 @@ class PurchaseTicketServiceTest {
             ticket.setSeatNumber(rs.getString("seat_number"));
             return ticket;
         }, TEST_USERNAME).stream().filter(ticket -> !ticketIdsBeforeTest.contains(ticket.getId())).forEach(ticket -> {
-            jdbcTemplate.update("UPDATE t_seat SET seat_status=? WHERE train_id=? AND start_station=? "
-                            + "AND end_station=? AND seat_type=? AND carriage_number=? AND seat_number=? "
-                            + "AND seat_status=? AND del_flag=0",
-                    SeatStatusEnum.AVAILABLE.getCode(), ticket.getTrainId(), ticket.getStartStation(),
-                    ticket.getEndStation(), ticket.getSeatType(), ticket.getCarriageNumber(),
-                    ticket.getSeatNumber(), SeatStatusEnum.LOCKED.getCode());
+            jdbcTemplate.update("UPDATE t_seat_segment SET seat_status=0,ticket_id=NULL,order_sn=NULL WHERE ticket_id=?",ticket.getId());
             jdbcTemplate.update("DELETE FROM t_ticket WHERE id=? AND username=?", ticket.getId(), TEST_USERNAME);
         });
     }
@@ -214,7 +211,7 @@ class PurchaseTicketServiceTest {
     void purchaseTickets_conditionalUpdateLosesRace_rollsBackAndReturnsToken() {
         stubPassengers(101L);
         long lockedBefore = countLockedSeats();
-        doReturn(0).when(seatMapper).update(any(SeatDO.class), ArgumentMatchers.<Wrapper<SeatDO>>any());
+        doReturn(0).when(seatMapper).reserveSegments(anyList(),org.mockito.ArgumentMatchers.anyInt(),org.mockito.ArgumentMatchers.anyInt(),anyString());
 
         ServiceException exception = assertThrows(ServiceException.class,
                 () -> purchaseTicketService.purchaseTickets(buildRequest(2, List.of(101L))));
@@ -237,7 +234,7 @@ class PurchaseTicketServiceTest {
         // 本地占座事务已经提交，随后由幂等取消回调释放座位并取消车票。
         assertEquals(lockedBeforeTest, countLockedSeats());
         assertEquals(0, countTestTickets());
-        verify(tokenBucket).returnToken(anyLong(), anyString(), anyString(), anyMap());
+        org.awaitility.Awaitility.await().untilAsserted(() -> verify(tokenBucket).invalidateOrThrow(1L));
     }
 
     @Test
@@ -293,11 +290,7 @@ class PurchaseTicketServiceTest {
     }
 
     private long countLockedSeats() {
-        return seatMapper.selectCount(Wrappers.lambdaQuery(SeatDO.class)
-                .eq(SeatDO::getTrainId, Long.valueOf(TRAIN_ID))
-                .eq(SeatDO::getStartStation, DEPARTURE)
-                .eq(SeatDO::getEndStation, ARRIVAL)
-                .eq(SeatDO::getSeatStatus, SeatStatusEnum.LOCKED.getCode()));
+        return jdbcTemplate.queryForObject("SELECT COUNT(DISTINCT s.seat_id) FROM t_seat_segment s JOIN t_physical_seat p ON p.id=s.seat_id WHERE p.train_id=1 AND s.seat_status=1",Long.class);
     }
 
     private long countTestTickets() {

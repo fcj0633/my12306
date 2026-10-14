@@ -1,5 +1,5 @@
--- KEYS[1]：区间令牌桶 Hash Key
--- ARGV：seatType1, count1, seatType2, count2, ...
+-- KEYS[1]：整车基本区段令牌桶 Hash Key
+-- ARGV：segment1_seatType1, count1, segment2_seatType2, count2, ...
 -- 返回值：1=全部扣减成功，0=任一席别不足，-1=任一 field 尚未初始化。
 
 local pairCount = #ARGV / 2

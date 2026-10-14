@@ -29,6 +29,7 @@ class PurchaseMetadataServiceTest {
     }
     TrainStationRelationDO fixture() {
         TrainDO train=new TrainDO();train.setTrainNumber("G1");
+        when(cache.train(anyString(),any())).thenCallRealMethod();
         when(cache.safeGet(anyString(), org.mockito.ArgumentMatchers.<Supplier<String>>any(),anyLong(),any(TimeUnit.class))).thenReturn(JSON.toJSONString(train));
         var relation=new TrainStationRelationDO();relation.setDepartureTime(new Date(1000));relation.setArrivalTime(new Date(2000));
         when(relations.selectOne(any())).thenReturn(relation);return relation;
@@ -51,7 +52,8 @@ class PurchaseMetadataServiceTest {
         assertThrows(ServiceException.class,()->service.prepare(request(2)));verifyNoInteractions(relations,prices);
     }
     @Test void missingRelationFailsBeforePrices() {
-        TrainDO train=new TrainDO();train.setTrainNumber("G1");when(cache.safeGet(anyString(),org.mockito.ArgumentMatchers.<Supplier<String>>any(),anyLong(),any(TimeUnit.class))).thenReturn(JSON.toJSONString(train));
+        TrainDO train=new TrainDO();train.setTrainNumber("G1");when(cache.train(anyString(),any())).thenCallRealMethod();
+        when(cache.safeGet(anyString(),org.mockito.ArgumentMatchers.<Supplier<String>>any(),anyLong(),any(TimeUnit.class))).thenReturn(JSON.toJSONString(train));
         assertThrows(ServiceException.class,()->service.prepare(request(2)));verifyNoInteractions(prices);
     }
     @Test void missingPricePreservesBusinessError() {

@@ -9,7 +9,6 @@ import edu.swu.fcj.my12306.biz.ticketservice.common.cache.RedisCacheHelper;
 import edu.swu.fcj.my12306.biz.ticketservice.common.id.SnowflakeIdGenerator;
 import edu.swu.fcj.my12306.biz.ticketservice.common.chain.AbstractChainContext;
 import edu.swu.fcj.my12306.biz.ticketservice.common.constant.TicketChainMarkEnum;
-import edu.swu.fcj.my12306.biz.ticketservice.common.toolkit.CacheUtil;
 import edu.swu.fcj.my12306.biz.ticketservice.dto.domain.PurchaseReservationResult;
 import edu.swu.fcj.my12306.biz.ticketservice.dto.domain.PurchaseMetadata;
 import edu.swu.fcj.my12306.biz.ticketservice.dto.domain.PurchaseTicketPassengerDetailDTO;
@@ -43,7 +42,6 @@ import java.util.stream.Collectors;
 
 import static edu.swu.fcj.my12306.biz.ticketservice.common.constant.RedisKeyConstant.LOCK_PURCHASE_TICKETS_CARRIAGE;
 import static edu.swu.fcj.my12306.biz.ticketservice.common.constant.RedisKeyConstant.LOCK_PURCHASE_TICKETS_USER;
-import static edu.swu.fcj.my12306.biz.ticketservice.common.constant.RedisKeyConstant.TRAIN_STATION_REMAINING_TICKET;
 
 /**
  * D4 purchase orchestration. Admission and passenger ownership checks happen before locking;
@@ -93,6 +91,7 @@ public class PurchaseTicketServiceImpl implements PurchaseTicketService {
         }
 
         boolean reservationCommitted = false;
+        boolean localOutcomeUnknown = false;
         try {
             // Reject invalid passenger ownership before a request can occupy either distributed lock.
             Map<String, PassengerActualRespDTO> passengersById = loadPassengers(requestParam, username);
@@ -103,7 +102,6 @@ public class PurchaseTicketServiceImpl implements PurchaseTicketService {
                     requestParam, userId, username, orderSn, passengersById, seatTypeCounts, metadata);
             reservationCommitted = true;
 
-            evictRemainingTicketCacheSafely(requestParam);
             Result<String> orderResult = createOrder(reservation, username, requestParam.getTrainId());
             if (orderResult == null || !Result.SUCCESS_CODE.equals(orderResult.getCode())) {
                 compensateKnownFailure(reservation);
@@ -120,9 +118,13 @@ public class PurchaseTicketServiceImpl implements PurchaseTicketService {
                     .orderSn(orderSn)
                     .ticketOrderDetails(reservation.ticketOrderDetails())
                     .build();
+        } catch (org.springframework.transaction.TransactionSystemException
+                 | org.springframework.transaction.HeuristicCompletionException ex) {
+            localOutcomeUnknown = true;
+            throw ex;
         } finally {
             // After the local transaction commits, cancelCallback is the sole token-return owner.
-            if (!reservationCommitted) {
+            if (!reservationCommitted && !localOutcomeUnknown) {
                 tokenBucket.returnToken(Long.valueOf(requestParam.getTrainId()),
                         requestParam.getDeparture(), requestParam.getArrival(), seatTypeCounts);
             }
@@ -280,22 +282,12 @@ public class PurchaseTicketServiceImpl implements PurchaseTicketService {
         }
     }
 
-    private void evictRemainingTicketCacheSafely(PurchaseTicketReqDTO requestParam) {
-        try {
-            redisCacheHelper.delete(TRAIN_STATION_REMAINING_TICKET
-                    + CacheUtil.buildKey(requestParam.getTrainId(),
-                    requestParam.getDeparture(), requestParam.getArrival()));
-        } catch (RuntimeException ex) {
-            log.warn("本地占座已提交，但余票缓存删除失败，等待缓存过期。trainId={}", requestParam.getTrainId(), ex);
-        }
-    }
-
     private Map<Integer, Integer> buildSeatTypeCounts(PurchaseTicketReqDTO requestParam) {
-        Map<Integer, Integer> seatTypeCounts = new TreeMap<>();
+        Map<Integer, Integer> counts = new TreeMap<>();
         for (PurchaseTicketPassengerDetailDTO passenger : requestParam.getPassengers()) {
-            seatTypeCounts.merge(passenger.getSeatType(), 1, Integer::sum);
+            counts.merge(passenger.getSeatType(), 1, Integer::sum);
         }
-        return seatTypeCounts;
+        return counts;
     }
 
     private void unlockSafely(RLock lock, String lockType) {

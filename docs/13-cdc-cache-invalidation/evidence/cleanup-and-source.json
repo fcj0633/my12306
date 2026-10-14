@@ -1,0 +1,31 @@
+{
+  "remainingOwnedDatabases": 0,
+  "remainingTemporaryUsers": 0,
+  "redisKeysBeforeFinalCleanup": {
+    "1791720116565749400": 0,
+    "1791720450010364800": 0,
+    "1791720771474383800": 0,
+    "1791721048398024700": 0
+  },
+  "temporaryCredentialFileRemoved": true,
+  "sourceSha256": {
+    "12306/my12306/services/cdc-services/src/main/java/edu/swu/fcj/my12306/cdc/BatchForwarder.java": "c4632c2f2f18a4231271b59d2d21b08fced2a3e2d201a31ae45948a905bbf257",
+    "12306/my12306/services/cdc-services/src/main/java/edu/swu/fcj/my12306/cdc/CdcApplication.java": "d4c3e38dad828b67125d9598f149f788ed2f96b8465c0ba0a68764c3063bd7cb",
+    "12306/my12306/services/cdc-services/src/main/java/edu/swu/fcj/my12306/cdc/CdcReplayMain.java": "2bbb17a1e3f81485190fde604bb82b58b2a2fecfc517945e2d9d93d5450b3dc4",
+    "12306/my12306/services/cdc-services/src/main/java/edu/swu/fcj/my12306/cdc/EventEncoder.java": "97cd0a967c7e24ad71b914f950d76c83062661767f3fdb35eaad94d6e84f51d2",
+    "12306/my12306/services/cdc-services/src/main/java/edu/swu/fcj/my12306/cdc/InventoryEvent.java": "28df871486943b235875f9d2cec94d76997cca5af4f95a54f148bcc6a4488c03",
+    "12306/my12306/services/cdc-services/src/main/resources/application.yml": "49af1d200e489f8c27a862ac296f943d5301fad8181895e0961402ba31f2add4",
+    "12306/my12306/services/ticket-services/src/main/java/edu/swu/fcj/my12306/biz/ticketservice/mq/InventoryCdcConfig.java": "b786b7a4c3f8089ae836035603f5e3db87af3a6b2292f61a1cd5ff19425ddfa9",
+    "12306/my12306/services/ticket-services/src/main/java/edu/swu/fcj/my12306/biz/ticketservice/mq/InventoryCdcEvent.java": "16487d7948d9b493de7d46314e08fdd6be9a05dec1307019dc15b4f11727fbb4",
+    "12306/my12306/services/ticket-services/src/main/java/edu/swu/fcj/my12306/biz/ticketservice/mq/CacheInvalidationConsumer.java": "4e29878c71a7ddd0acd7a853bfaefcd0c4ec57395bbd4c7714d5843bfbf22443",
+    "12306/my12306/services/ticket-services/src/main/java/edu/swu/fcj/my12306/biz/ticketservice/service/cache/InventoryCacheInvalidator.java": "bb2467bfbf06fcc1535b377cb50bcb579afd2ab3aa799d1730e34e1903af563e",
+    "12306/my12306/services/pom.xml": "6526165e2efe8df2c8ce2065aa21b0e7ea62377416e3613bc6973d69d9ca142b",
+    "12306/my12306/services/cdc-services/pom.xml": "f66c1ec637eae2210e158d6be87ba57ebe05a917bb8d2b6874fdba85c244d5d6",
+    "12306/my12306/services/ticket-services/src/main/resources/application.yml": "0604148cab9b74651c4706b3b6de9d325072a62b686dfc5dce6a06f36e98c630",
+    "12306/my12306/services/ticket-services/src/main/java/edu/swu/fcj/my12306/biz/ticketservice/service/cache/InventoryCacheEventProcessor.java": "d79cea1c760a046e1c24d19b181096b30f99200df4a28c738d5763781996b264",
+    "12306/my12306/services/ticket-services/src/main/java/edu/swu/fcj/my12306/biz/ticketservice/dao/mapper/SeatMapper.java": "6dfec09712927c9ef6d17a49ed4acc594c71ea060a9be44e931e0a37c1505b0d",
+    "12306/my12306/services/cdc-services/deploy/broker.conf.example": "0f4088f1feeb6dbfd2e7d7544f6c03bc4fa19e6ca91a0a4b4521cad4b08fb86c",
+    "12306/my12306/services/cdc-services/deploy/compose.yml": "f492a83974f11dfbbc575926cb11510c71091f342e1d77d70443802a43a640b7",
+    "12306/my12306/services/cdc-services/deploy/instance.properties.example": "e43da9b9eacffb4d96a13016a0476dd567a7b766dafa7817287a919090bb6f15"
+  }
+}

@@ -1,0 +1,5 @@
+2026-10-11T20:18:32.775+08:00  INFO 27204 --- [cdc-services] [           main] edu.swu.fcj.my12306.cdc.CdcApplication   : CDC_BRIDGE_READY database=codex_cdc_test_1791721048398024700
+2026-10-11T20:19:05.215+08:00  INFO 27204 --- [cdc-services] [           main] edu.swu.fcj.my12306.cdc.BatchForwarder   : CDC_MQ_SENT bytes=668
+2026-10-11T20:19:06.030+08:00  INFO 27204 --- [cdc-services] [           main] edu.swu.fcj.my12306.cdc.BatchForwarder   : CDC_MQ_SENT bytes=668
+2026-10-11T20:19:05.586+08:00  INFO 20544 --- [my12306-ticket-service] [1048398024700_1] e.s.f.m.b.t.m.CacheInvalidationConsumer  : CDC_INVALIDATED operation=UPDATE rows=1 keys=6
+2026-10-11T20:19:06.043+08:00  INFO 20544 --- [my12306-ticket-service] [1048398024700_2] e.s.f.m.b.t.m.CacheInvalidationConsumer  : CDC_INVALIDATED operation=UPDATE rows=1 keys=6

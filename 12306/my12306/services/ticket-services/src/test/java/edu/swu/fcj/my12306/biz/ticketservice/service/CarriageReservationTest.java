@@ -50,12 +50,13 @@ class CarriageReservationTest {
         // existing allocator tests and runtime tests. Never let fixtures consume the original pool.
         doAnswer(call -> {
             String after=call.getArgument(4);int count=call.getArgument(5);Integer type=call.getArgument(3);
-            return db.query("SELECT id,carriage_number,seat_number FROM t_seat WHERE carriage_number LIKE 'TEST-C%' "
-                    +"AND train_id=1 AND seat_type=? AND seat_status=0 AND del_flag=0 AND carriage_number>? "
+            return db.query("SELECT id,carriage_number,seat_number FROM t_physical_seat p WHERE carriage_number LIKE 'TEST-C%' "
+                    +"AND train_id=1 AND seat_type=? AND del_flag=0 AND carriage_number>? AND NOT EXISTS (SELECT 1 FROM t_seat_segment s WHERE s.seat_id=p.id AND s.seat_status<>0) "
                     +"ORDER BY carriage_number,seat_number LIMIT ?",(rs,n)->{
                         SeatDO s=new SeatDO();s.setId(rs.getLong(1));s.setCarriageNumber(rs.getString(2));s.setSeatNumber(rs.getString(3));return s;
                     },type,after==null?"":after,count);
         }).when(seatMapper).selectAvailableSeatCandidates(anyLong(),anyString(),anyString(),anyInt(),nullable(String.class),anyInt());
+        when(cache.train(anyString(),any())).thenCallRealMethod();
         when(cache.safeGet(anyString(), org.mockito.ArgumentMatchers.<Supplier<String>>any(),anyLong(),any(TimeUnit.class)))
                 .thenAnswer(call -> ((Supplier<String>)call.getArgument(1)).get());
         RLock lock=mock(RLock.class);when(lock.isHeldByCurrentThread()).thenReturn(true);
@@ -72,10 +73,11 @@ class CarriageReservationTest {
     }
 
     void fixture(int... sizes) {
-        long id=db.queryForObject("SELECT MAX(id)+100 FROM t_seat",Long.class);
+        long id=db.queryForObject("SELECT MAX(id)+100 FROM t_physical_seat",Long.class);
         for(int c=0;c<sizes.length;c++) for(int n=0;n<sizes[c];n++) {
-            db.update("INSERT INTO t_seat(id,train_id,carriage_number,seat_number,seat_type,start_station,end_station,price,seat_status,create_time,update_time,del_flag) "
-                    +"VALUES(?,1,?,?,2,'北京南','宁波',100,0,NOW(),NOW(),0)",id,"TEST-C"+(c+1),String.format("%02dA",n+1));
+            db.update("INSERT INTO t_physical_seat(id,train_id,carriage_number,seat_number,seat_type) VALUES(?,1,?,?,2)",id,"TEST-C"+(c+1),String.format("%02dA",n+1));
+            int k=db.queryForObject("SELECT COUNT(*)-1 FROM t_inventory_station WHERE train_id=1",Integer.class);
+            for(int segment=0;segment<k;segment++) db.update("INSERT INTO t_seat_segment(seat_id,segment_index) VALUES(?,?)",id,segment);
             ids.add(id++);
         }
     }
@@ -87,7 +89,7 @@ class CarriageReservationTest {
         r.setPassengers(list);return r;
     }
 
-    int locked(){return db.queryForObject("SELECT COUNT(*) FROM t_seat WHERE carriage_number LIKE 'TEST-C%' AND seat_status=1",Integer.class);}
+    int locked(){return db.queryForObject("SELECT COUNT(DISTINCT s.seat_id) FROM t_seat_segment s JOIN t_physical_seat p ON p.id=s.seat_id WHERE p.carriage_number LIKE 'TEST-C%' AND s.seat_status=1",Integer.class);}
 
     @Test void singlePassengerUsesOnlyOneSeat(){fixture(3,3,3);purchase.purchaseTickets(request(1));assertEquals(1,locked());}
     @Test void twoPassengersMoveToLaterCarriage(){fixture(1,3,0);var r=purchase.purchaseTickets(request(2));assertEquals(2,locked());assertEquals(1,r.getTicketOrderDetails().stream().map(TicketOrderDetailRespDTO::getCarriageNumber).distinct().count());}
@@ -97,7 +99,8 @@ class CarriageReservationTest {
     @Test void laterSeatTypeFailureRollsBackEarlierSeats(){fixture(3,3,3);var r=request(2);r.getPassengers().get(1).setSeatType(1);assertThrows(ServiceException.class,()->purchase.purchaseTickets(r));assertEquals(0,locked());verify(tokens).returnToken(eq(1L),anyString(),anyString(),anyMap());}
 
     @AfterEach void cleanup(){
+        org.awaitility.Awaitility.await().atMost(java.time.Duration.ofSeconds(10)).untilAsserted(() -> assertEquals(0,db.queryForObject("SELECT COUNT(*) FROM t_inventory_cache_event WHERE train_id=1",Integer.class)));
         UserContext.removeUser();db.update("DELETE FROM t_ticket WHERE username=?",username);
-        for(Long id:ids)db.update("DELETE FROM t_seat WHERE id=? AND carriage_number LIKE 'TEST-C%'",id);
+        for(Long id:ids) {db.update("DELETE FROM t_seat_segment WHERE seat_id=?",id);db.update("DELETE FROM t_physical_seat WHERE id=? AND carriage_number LIKE 'TEST-C%'",id);}
     }
 }

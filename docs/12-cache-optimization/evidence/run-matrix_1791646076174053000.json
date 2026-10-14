@@ -1,0 +1,21 @@
+{
+  "runId": "matrix_1791646076174053000",
+  "parameters": {
+    "models": "A,B",
+    "rounds": 3,
+    "seconds": 60,
+    "concurrency": 100,
+    "scenarios": "hot-http",
+    "start_round": 1,
+    "http_warm_seconds": 10
+  },
+  "completed": [
+    "A/hot-http/1",
+    "B/hot-http/1",
+    "B/hot-http/2",
+    "A/hot-http/2",
+    "A/hot-http/3",
+    "B/hot-http/3"
+  ],
+  "postReboot": true
+}

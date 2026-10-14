@@ -1,0 +1,141 @@
+{
+  "database": "codex_segment_test_1791633985296223600",
+  "sourceReadOnly": true,
+  "tests": "*Test",
+  "benchmark": true,
+  "elapsedSeconds": 144.40600000019185,
+  "suites": [
+    {
+      "name": "edu.swu.fcj.my12306.biz.ticketservice.common.toolkit.CacheUtilTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "edu.swu.fcj.my12306.biz.ticketservice.common.toolkit.StationCalculateUtilTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "edu.swu.fcj.my12306.biz.ticketservice.common.toolkit.TimeStringComparatorTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "edu.swu.fcj.my12306.biz.ticketservice.job.TicketOrphanRecoveryJobTest",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "edu.swu.fcj.my12306.biz.ticketservice.service.CarriageDirectoryTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "edu.swu.fcj.my12306.biz.ticketservice.service.CarriageReservationTest",
+      "tests": 6,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "edu.swu.fcj.my12306.biz.ticketservice.service.InventoryMigrationTest",
+      "tests": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "edu.swu.fcj.my12306.biz.ticketservice.service.InventoryRouteTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "edu.swu.fcj.my12306.biz.ticketservice.service.PurchaseMetadataServiceTest",
+      "tests": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "edu.swu.fcj.my12306.biz.ticketservice.service.PurchaseTicketOrchestrationTest",
+      "tests": 9,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "edu.swu.fcj.my12306.biz.ticketservice.service.PurchaseTicketServiceTest",
+      "tests": 7,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "edu.swu.fcj.my12306.biz.ticketservice.service.SeatAllocatorTest",
+      "tests": 10,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "edu.swu.fcj.my12306.biz.ticketservice.service.SegmentInventoryTest",
+      "tests": 11,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "edu.swu.fcj.my12306.biz.ticketservice.service.SegmentLuaTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "edu.swu.fcj.my12306.biz.ticketservice.service.SegmentPerformanceTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "edu.swu.fcj.my12306.biz.ticketservice.service.TicketAvailabilityTokenBucketTest",
+      "tests": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "edu.swu.fcj.my12306.biz.ticketservice.service.TicketCallbackServiceTest",
+      "tests": 6,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "edu.swu.fcj.my12306.biz.ticketservice.service.TicketReadServiceTest",
+      "tests": 11,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  ],
+  "totals": {
+    "tests": 91,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  }
+}

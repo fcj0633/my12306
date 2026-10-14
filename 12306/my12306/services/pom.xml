@@ -12,6 +12,7 @@
     <artifactId>services</artifactId>
     <packaging>pom</packaging>
     <modules>
+        <module>cdc-services</module>
         <module>user-services</module>
         <module>ticket-services</module>
         <module>order-services</module>

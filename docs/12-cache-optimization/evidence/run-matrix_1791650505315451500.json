@@ -1,0 +1,18 @@
+{
+  "runId": "matrix_1791650505315451500",
+  "parameters": {
+    "models": "B",
+    "rounds": 1,
+    "seconds": 60,
+    "concurrency": 50,
+    "scenarios": "burst-cold,checks,pulses",
+    "start_round": 1,
+    "http_warm_seconds": 10
+  },
+  "completed": [
+    "B/burst-cold/1",
+    "B/checks/1",
+    "B/pulses/1"
+  ],
+  "postReboot": true
+}

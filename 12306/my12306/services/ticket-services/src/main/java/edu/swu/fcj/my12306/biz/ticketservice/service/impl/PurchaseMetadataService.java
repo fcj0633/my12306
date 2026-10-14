@@ -34,11 +34,7 @@ public class PurchaseMetadataService {
     }
 
     private PurchaseMetadata load(PurchaseTicketReqDTO request) {
-        String cached = redisCacheHelper.safeGet(TRAIN_INFO + request.getTrainId(), () -> {
-            TrainDO train = trainMapper.selectById(Long.valueOf(request.getTrainId()));
-            return train == null ? null : JSON.toJSONString(train);
-        }, ADVANCE_TICKET_DAY, TimeUnit.DAYS);
-        TrainDO train = StrUtil.isBlank(cached) ? null : JSON.parseObject(cached, TrainDO.class);
+        TrainDO train = redisCacheHelper.train(request.getTrainId(), trainMapper);
         if (train == null) throw new ServiceException("请检查车次是否存在");
         TrainStationRelationDO relation = relationMapper.selectOne(Wrappers.lambdaQuery(TrainStationRelationDO.class)
                 .eq(TrainStationRelationDO::getTrainId, Long.valueOf(request.getTrainId()))

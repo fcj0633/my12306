@@ -60,11 +60,7 @@ public class TrainPurchaseTicketParamVerifyChainFilter implements TrainPurchaseT
     }
 
     private TrainDO loadTrain(String trainId) {
-        String cacheValue = redisCacheHelper.safeGet(TRAIN_INFO + trainId, () -> {
-            TrainDO trainDO = trainMapper.selectById(Long.valueOf(trainId));
-            return trainDO == null ? null : JSON.toJSONString(trainDO);
-        }, ADVANCE_TICKET_DAY, TimeUnit.DAYS);
-        return StrUtil.isBlank(cacheValue) ? null : JSON.parseObject(cacheValue, TrainDO.class);
+        return redisCacheHelper.train(trainId, trainMapper);
     }
 
     @Override

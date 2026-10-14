@@ -1,0 +1,43 @@
+{
+  "database": "codex_cdc_test_1791721048398024700",
+  "overlappingKeys": 6,
+  "preservedKeys": 4,
+  "reserve": {
+    "commitToReloadCorrectMs": 2083.2149,
+    "commitToInvalidatedMs": 1731.0399,
+    "counts": {
+      "0-1": 810,
+      "0-2": 809,
+      "0-3": 809,
+      "0-4": 809,
+      "1-2": 809,
+      "1-3": 809,
+      "1-4": 809,
+      "2-3": 810,
+      "2-4": 810,
+      "3-4": 810
+    },
+    "commitReturnedAt": 1791721143876
+  },
+  "release": {
+    "commitToReloadCorrectMs": 390.6832,
+    "commitToInvalidatedMs": 74.1684,
+    "counts": {
+      "0-1": 810,
+      "0-2": 810,
+      "0-3": 810,
+      "0-4": 810,
+      "1-2": 810,
+      "1-3": 810,
+      "1-4": 810,
+      "2-3": 810,
+      "2-4": 810,
+      "3-4": 810
+    },
+    "commitReturnedAt": 1791721145988
+  },
+  "businessOutboxEvents": 0,
+  "baselineSeatType2": 810,
+  "passed": true,
+  "runId": "1791721048398024700"
+}

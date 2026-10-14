@@ -39,6 +39,13 @@ public class TrainTicketQueryParamVerifyChainFilter implements TrainTicketQueryC
         if (RedisCacheHelper.allNonNull(redisCacheHelper.hMultiGet(QUERY_ALL_REGION_LIST, fields))) {
             return;
         }
+        if (redisCacheHelper.hasKey(QUERY_ALL_REGION_LIST)) {
+            // EXISTS can see a snapshot that was absent at the first HMGET.
+            if (RedisCacheHelper.allNonNull(redisCacheHelper.hMultiGet(QUERY_ALL_REGION_LIST, fields))) {
+                return;
+            }
+            throw new ServiceException("出发地或目的地不存在");
+        }
         redisCacheHelper.executeWithLock(LOCK_QUERY_ALL_REGION_LIST, () -> {
             List<Object> current = redisCacheHelper.hMultiGet(QUERY_ALL_REGION_LIST, fields);
             if (RedisCacheHelper.allNonNull(current)) {
@@ -60,9 +67,7 @@ public class TrainTicketQueryParamVerifyChainFilter implements TrainTicketQueryC
                     regionValueMap.put(each.getCode(), each.getName());
                 }
             }
-            if (CollUtil.isNotEmpty(regionValueMap)) {
-                redisCacheHelper.hPutAll(QUERY_ALL_REGION_LIST, regionValueMap);
-            }
+            redisCacheHelper.publishSnapshot(QUERY_ALL_REGION_LIST, regionValueMap);
         });
         List<Object> finalValue = redisCacheHelper.hMultiGet(QUERY_ALL_REGION_LIST, fields);
         if (!RedisCacheHelper.allNonNull(finalValue)) {

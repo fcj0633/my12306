@@ -1,0 +1,25 @@
+{
+  "userRequestedQuickFinish": true,
+  "date": "2026-10-11",
+  "longTestsStopped": true,
+  "finalColdValidation": {
+    "requests": 1500,
+    "errors": 0
+  },
+  "finalChecks": 11,
+  "pulseSamples": 20,
+  "hot100Accepted": false,
+  "cleanup": {
+    "recordedNamespaces": 23,
+    "removedKeys": 27,
+    "isolatedDatabasesRemoved": true
+  },
+  "remaining": [
+    "100 concurrency additional rounds and regression attribution",
+    "TTL expiry A/B",
+    "independent key parallelism proof",
+    "actual negative/version key-count probes",
+    "prewarm ROI",
+    "full regression after final cold-path fix"
+  ]
+}

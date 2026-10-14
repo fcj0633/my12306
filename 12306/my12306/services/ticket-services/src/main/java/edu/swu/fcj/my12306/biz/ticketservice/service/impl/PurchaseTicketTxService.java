@@ -1,8 +1,6 @@
 package edu.swu.fcj.my12306.biz.ticketservice.service.impl;
 
-import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import edu.swu.fcj.my12306.biz.ticketservice.common.ServiceException;
-import edu.swu.fcj.my12306.biz.ticketservice.common.enums.SeatStatusEnum;
 import edu.swu.fcj.my12306.biz.ticketservice.common.enums.SourceEnum;
 import edu.swu.fcj.my12306.biz.ticketservice.common.enums.TicketStatusEnum;
 import edu.swu.fcj.my12306.biz.ticketservice.dao.entity.SeatDO;
@@ -12,6 +10,9 @@ import edu.swu.fcj.my12306.biz.ticketservice.dao.mapper.TicketMapper;
 import edu.swu.fcj.my12306.biz.ticketservice.dto.domain.PurchaseTicketPassengerDetailDTO;
 import edu.swu.fcj.my12306.biz.ticketservice.dto.domain.PurchaseReservationResult;
 import edu.swu.fcj.my12306.biz.ticketservice.dto.domain.PurchaseMetadata;
+import edu.swu.fcj.my12306.biz.ticketservice.dto.domain.SegmentAssignment;
+import edu.swu.fcj.my12306.biz.ticketservice.service.cache.InventoryCacheEvents;
+import java.util.TreeMap;
 import edu.swu.fcj.my12306.biz.ticketservice.dto.domain.TicketCallbackSeatDTO;
 import edu.swu.fcj.my12306.biz.ticketservice.dto.req.PurchaseTicketReqDTO;
 import edu.swu.fcj.my12306.biz.ticketservice.dto.req.TicketCallbackReqDTO;
@@ -50,6 +51,9 @@ public class PurchaseTicketTxService {
     private final SeatMapper seatMapper;
     private final TicketMapper ticketMapper;
     private final SeatAllocator seatAllocator;
+    private final InventoryRouteService inventoryRoutes;
+    private final InventoryCacheEvents cacheEvents;
+    private final io.micrometer.core.instrument.MeterRegistry metrics;
 
     /**
      * 在锁内原子完成选座、条件占座和车票写入；必须由外层 Bean 调用以经过 Spring 事务代理。
@@ -73,34 +77,29 @@ public class PurchaseTicketTxService {
 
         Map<Integer, List<PurchaseTicketPassengerDetailDTO>> seatTypeMap = requestParam.getPassengers().stream()
                 .collect(Collectors.groupingBy(PurchaseTicketPassengerDetailDTO::getSeatType,
-                        LinkedHashMap::new, Collectors.toList()));
+                        TreeMap::new, Collectors.toList()));
         List<SeatAssignResult> assignResults = new ArrayList<>();
         for (Map.Entry<Integer, List<PurchaseTicketPassengerDetailDTO>> entry : seatTypeMap.entrySet()) {
             List<PurchaseTicketPassengerDetailDTO> passengers = entry.getValue();
             String carriage = candidateCarriages.get(entry.getKey());
-            List<SeatDO> seats = carriage == null
+            List<SeatDO> seats = metrics.timer("my12306.inventory.allocate").record(() -> carriage == null
                     ? seatAllocator.allocate(Long.valueOf(requestParam.getTrainId()),
                         requestParam.getDeparture(), requestParam.getArrival(), entry.getKey(), passengers.size())
                     : seatAllocator.allocateInCarriage(Long.valueOf(requestParam.getTrainId()),
-                        requestParam.getDeparture(), requestParam.getArrival(), entry.getKey(), carriage, passengers.size());
+                        requestParam.getDeparture(), requestParam.getArrival(), entry.getKey(), carriage, passengers.size()));
             if (seats.size() < passengers.size()) {
+                metrics.counter("my12306.inventory.allocate.shortage").increment();
                 if (carriage != null) throw new CarriageUnavailableException();
                 throw new ServiceException(SEAT_NOT_ENOUGH_MESSAGE);
-            }
-            List<Long> seatIds = seats.stream().map(SeatDO::getId).toList();
-            SeatDO updateSeat = new SeatDO();
-            updateSeat.setSeatStatus(SeatStatusEnum.LOCKED.getCode());
-            int affectedRows = seatMapper.update(updateSeat, Wrappers.lambdaUpdate(SeatDO.class)
-                    .in(SeatDO::getId, seatIds)
-                    .eq(SeatDO::getSeatStatus, SeatStatusEnum.AVAILABLE.getCode()));
-            if (affectedRows != seats.size()) {
-                throw new CarriageUnavailableException();
             }
             for (int index = 0; index < passengers.size(); index++) {
                 assignResults.add(new SeatAssignResult(passengers.get(index), seats.get(index)));
             }
         }
 
+        var range = inventoryRoutes.resolve(Long.valueOf(requestParam.getTrainId()),
+                requestParam.getDeparture(), requestParam.getArrival());
+        Map<Integer, List<SegmentAssignment>> assignments = new TreeMap<>();
         Date now = new Date();
         List<TicketOrderDetailRespDTO> ticketOrderDetails = new ArrayList<>();
         List<TicketOrderItemCreateRemoteReqDTO> orderItems = new ArrayList<>();
@@ -126,6 +125,8 @@ public class PurchaseTicketTxService {
             ticketDO.setUpdateTime(now);
             ticketDO.setDelFlag(0);
             ticketMapper.insert(ticketDO);
+            assignments.computeIfAbsent(each.passenger().getSeatType(), ignored -> new ArrayList<>())
+                    .add(new SegmentAssignment(each.seat().getId(), ticketDO.getId()));
 
             orderItems.add(TicketOrderItemCreateRemoteReqDTO.builder()
                     .amount(amount).carriageNumber(each.seat().getCarriageNumber())
@@ -140,6 +141,15 @@ public class PurchaseTicketTxService {
                     .phone(passenger.getPhone()).seatType(each.passenger().getSeatType())
                     .ticketType(passenger.getDiscountType()).build());
         }
+
+        for (var group : assignments.values()) {
+            group.sort(java.util.Comparator.comparing(SegmentAssignment::seatId));
+            int affected = metrics.timer("my12306.inventory.segment.update").record(() ->
+                    seatMapper.reserveSegments(group, range.start(), range.end(), orderSn));
+            metrics.counter("my12306.inventory.segment.updated-rows").increment(affected);
+            if (affected != group.size() * range.length()) throw new CarriageUnavailableException();
+        }
+        cacheEvents.enqueue(Long.valueOf(requestParam.getTrainId()), range, false);
 
         TicketOrderCreateRemoteReqDTO orderCreateReqDTO = TicketOrderCreateRemoteReqDTO.builder()
                 .orderSn(orderSn).userId(userId).username(username).trainId(Long.valueOf(requestParam.getTrainId()))

@@ -1,0 +1,12 @@
+[
+  {
+    "bytes": 100963839,
+    "artifact": "cdc-services-0.0.1-SNAPSHOT.jar",
+    "sha256": "FB5AEDB87D3B2997FC6AC22154C139AD3C13BE6482851E1197B717A8FB43614A"
+  },
+  {
+    "bytes": 147850564,
+    "artifact": "ticket-services-0.0.1-SNAPSHOT.jar",
+    "sha256": "F52806E49766A04547E89645E06CD3451B7C12438670E2CF18558CD75C1457A0"
+  }
+]

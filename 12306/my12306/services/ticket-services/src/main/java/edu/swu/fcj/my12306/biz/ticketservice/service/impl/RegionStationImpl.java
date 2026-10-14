@@ -105,22 +105,9 @@ public class RegionStationImpl implements RegionStationService {
     }
 
     /**
-     * 先读缓存，未命中加锁双检回源；回源空结果不写缓存
+     * 按实际缓存 Key 加锁双检；正常空结果由缓存层编码并设置短 TTL。
      */
     private String getOrLoad(String cacheKey, String lockKey, Supplier<String> loader) {
-        String cacheValue = redisCacheHelper.get(cacheKey);
-        if (StrUtil.isNotBlank(cacheValue)) {
-            return cacheValue;
-        }
-        redisCacheHelper.executeWithLock(lockKey, () -> {
-            String current = redisCacheHelper.get(cacheKey);
-            if (StrUtil.isBlank(current)) {
-                String loaded = loader.get();
-                if (StrUtil.isNotBlank(loaded)) {
-                    redisCacheHelper.put(cacheKey, loaded, ADVANCE_TICKET_DAY, TimeUnit.DAYS);
-                }
-            }
-        });
-        return redisCacheHelper.get(cacheKey);
+        return redisCacheHelper.safeGet(cacheKey, loader, ADVANCE_TICKET_DAY, TimeUnit.DAYS);
     }
 }

@@ -85,23 +85,23 @@ class TicketCallbackServiceTest {
     @MockBean
     private TicketAvailabilityTokenBucket tokenBucket;
 
+    @Autowired private org.springframework.jdbc.core.JdbcTemplate db;
+    @Autowired private edu.swu.fcj.my12306.biz.ticketservice.service.impl.InventoryRouteService routes;
     private SeatDO seat;
+    private edu.swu.fcj.my12306.biz.ticketservice.dto.domain.SegmentRange range;
 
     @BeforeEach
     void setUp() {
-        seat = seatMapper.selectOne(Wrappers.lambdaQuery(SeatDO.class)
-                .eq(SeatDO::getTrainId, TRAIN_ID)
-                .eq(SeatDO::getSeatType, SEAT_TYPE)
-                .eq(SeatDO::getStartStation, DEPARTURE)
-                .eq(SeatDO::getEndStation, ARRIVAL)
-                .eq(SeatDO::getSeatStatus, SeatStatusEnum.AVAILABLE.getCode())
-                .last("limit 1"));
-        updateSeatStatus(SeatStatusEnum.LOCKED.getCode());
-        ticketMapper.insert(buildUnpaidTicket());
+        range=routes.resolve(TRAIN_ID,DEPARTURE,ARRIVAL);
+        seat=seatMapper.selectAvailableSeatCandidates(TRAIN_ID,DEPARTURE,ARRIVAL,SEAT_TYPE,null,1).getFirst();
+        seat.setSeatType(SEAT_TYPE);
+        TicketDO ticket=buildUnpaidTicket();ticketMapper.insert(ticket);
+        seatMapper.reserveSegments(List.of(new edu.swu.fcj.my12306.biz.ticketservice.dto.domain.SegmentAssignment(seat.getId(),ticket.getId())),range.start(),range.end(),TEST_ORDER_SN);
     }
 
     @AfterEach
     void tearDown() {
+        org.awaitility.Awaitility.await().atMost(java.time.Duration.ofSeconds(10)).untilAsserted(() -> assertEquals(0,db.queryForObject("SELECT COUNT(*) FROM t_inventory_cache_event WHERE train_id=?",Integer.class,TRAIN_ID)));
         updateSeatStatus(SeatStatusEnum.AVAILABLE.getCode());
         ticketMapper.delete(Wrappers.lambdaQuery(TicketDO.class)
                 .in(TicketDO::getUsername, TEST_USERNAME, NEW_USERNAME));
@@ -122,7 +122,7 @@ class TicketCallbackServiceTest {
 
         assertEquals(SeatStatusEnum.AVAILABLE.getCode(), currentSeatStatus());
         assertEquals(TicketStatusEnum.CANCELED.getCode(), currentTicketStatus());
-        verify(tokenBucket).returnToken(TRAIN_ID, DEPARTURE, ARRIVAL, java.util.Map.of(SEAT_TYPE, 1));
+        org.awaitility.Awaitility.await().untilAsserted(() -> verify(tokenBucket).invalidateOrThrow(TRAIN_ID));
     }
 
     @Test
@@ -139,7 +139,7 @@ class TicketCallbackServiceTest {
     void cancelCallback_doesNotReleaseAlreadySoldSeat() {
         updateSeatStatus(SeatStatusEnum.SOLD.getCode());
 
-        ticketCallbackService.cancelCallback(buildCallbackRequest());
+        org.junit.jupiter.api.Assertions.assertThrows(edu.swu.fcj.my12306.biz.ticketservice.common.ServiceException.class,() -> ticketCallbackService.cancelCallback(buildCallbackRequest()));
 
         // 已出售的座位绝不能被取消链路放回可售，否则等于把票卖两次
         assertEquals(SeatStatusEnum.SOLD.getCode(), currentSeatStatus());
@@ -153,19 +153,18 @@ class TicketCallbackServiceTest {
 
         assertEquals(SeatStatusEnum.AVAILABLE.getCode(), currentSeatStatus());
         assertEquals(TicketStatusEnum.CANCELED.getCode(), currentTicketStatus());
-        verify(tokenBucket, times(1)).returnToken(
-                TRAIN_ID, DEPARTURE, ARRIVAL, java.util.Map.of(SEAT_TYPE, 1));
+        org.awaitility.Awaitility.await().untilAsserted(() -> verify(tokenBucket, times(1)).invalidateOrThrow(TRAIN_ID));
     }
 
     @Test
     void staleCancelCallback_doesNotReleaseSeatReservedByNewOrder() {
         ticketCallbackService.cancelCallback(buildCallbackRequest());
 
-        updateSeatStatus(SeatStatusEnum.LOCKED.getCode());
         TicketDO newOwnerTicket = buildUnpaidTicket();
         newOwnerTicket.setOrderSn(NEW_ORDER_SN);
         newOwnerTicket.setUsername(NEW_USERNAME);
         ticketMapper.insert(newOwnerTicket);
+        seatMapper.reserveSegments(List.of(new edu.swu.fcj.my12306.biz.ticketservice.dto.domain.SegmentAssignment(seat.getId(),newOwnerTicket.getId())),range.start(),range.end(),NEW_ORDER_SN);
 
         // A delayed retry from the old order must not release the same coordinates again.
         ticketCallbackService.cancelCallback(buildCallbackRequest());
@@ -173,8 +172,7 @@ class TicketCallbackServiceTest {
         assertEquals(SeatStatusEnum.LOCKED.getCode(), currentSeatStatus());
         assertEquals(TicketStatusEnum.CANCELED.getCode(), currentTicketStatus());
         assertEquals(TicketStatusEnum.UNPAID.getCode(), currentTicketStatus(NEW_USERNAME));
-        verify(tokenBucket, times(1)).returnToken(
-                TRAIN_ID, DEPARTURE, ARRIVAL, java.util.Map.of(SEAT_TYPE, 1));
+        org.awaitility.Awaitility.await().untilAsserted(() -> verify(tokenBucket, times(1)).invalidateOrThrow(TRAIN_ID));
     }
 
     private TicketCallbackReqDTO buildCallbackRequest() {
@@ -213,13 +211,12 @@ class TicketCallbackServiceTest {
     }
 
     private void updateSeatStatus(Integer seatStatus) {
-        seatMapper.update(null, Wrappers.lambdaUpdate(SeatDO.class)
-                .eq(SeatDO::getId, seat.getId())
-                .set(SeatDO::getSeatStatus, seatStatus));
+        if(seatStatus==0) db.update("UPDATE t_seat_segment SET seat_status=0,ticket_id=NULL,order_sn=NULL WHERE seat_id=?",seat.getId());
+        else db.update("UPDATE t_seat_segment SET seat_status=? WHERE seat_id=? AND segment_index>=? AND segment_index<?",seatStatus,seat.getId(),range.start(),range.end());
     }
 
     private Integer currentSeatStatus() {
-        return seatMapper.selectById(seat.getId()).getSeatStatus();
+        return db.queryForObject("SELECT MAX(seat_status) FROM t_seat_segment WHERE seat_id=? AND segment_index>=? AND segment_index<?",Integer.class,seat.getId(),range.start(),range.end());
     }
 
     private Integer currentTicketStatus() {

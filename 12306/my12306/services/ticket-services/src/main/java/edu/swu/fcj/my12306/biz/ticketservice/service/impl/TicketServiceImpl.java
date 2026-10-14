@@ -86,15 +86,11 @@ public class TicketServiceImpl implements TicketService {
         List<Object> fields = List.of(requestParam.getFromStation(), requestParam.getToStation());
         List<Object> stationDetails = redisCacheHelper.hMultiGet(REGION_TRAIN_STATION_MAPPING, fields);
         if (!RedisCacheHelper.allNonNull(stationDetails)) {
-            redisCacheHelper.executeWithLock(LOCK_REGION_TRAIN_STATION_MAPPING, () -> {
-                if (!RedisCacheHelper.allNonNull(redisCacheHelper.hMultiGet(REGION_TRAIN_STATION_MAPPING, fields))
-                        && !redisCacheHelper.hasKey(REGION_TRAIN_STATION_MAPPING)) {
-                    Map<Object, Object> mapping = loadRegionTrainStationMapping();
-                    if (CollUtil.isNotEmpty(mapping)) {
-                        redisCacheHelper.hPutAll(REGION_TRAIN_STATION_MAPPING, mapping);
-                    }
-                }
-            });
+            if (!redisCacheHelper.hasKey(REGION_TRAIN_STATION_MAPPING)) {
+                redisCacheHelper.loadHash(REGION_TRAIN_STATION_MAPPING, LOCK_REGION_TRAIN_STATION_MAPPING,
+                        this::loadRegionTrainStationMappingData, true);
+            }
+            // Another loader may publish between HMGET and EXISTS; read the published snapshot.
             stationDetails = redisCacheHelper.hMultiGet(REGION_TRAIN_STATION_MAPPING, fields);
         }
         if (!RedisCacheHelper.allNonNull(stationDetails)) {
@@ -105,15 +101,9 @@ public class TicketServiceImpl implements TicketService {
 
         // 2. 城市对 → 车次列表（hash 缓存 + 锁回源）
         String regionTrainStationKey = String.format(REGION_TRAIN_STATION, fromRegion, toRegion);
-        Map<Object, Object> regionTrainStationMap = redisCacheHelper.hGetAll(regionTrainStationKey);
-        if (CollUtil.isEmpty(regionTrainStationMap)) {
-            redisCacheHelper.executeWithLock(LOCK_REGION_TRAIN_STATION, () -> {
-                if (CollUtil.isEmpty(redisCacheHelper.hGetAll(regionTrainStationKey))) {
-                    redisCacheHelper.hPutAll(regionTrainStationKey, loadRegionTrainStation(fromRegion, toRegion));
-                }
-            });
-            regionTrainStationMap = redisCacheHelper.hGetAll(regionTrainStationKey);
-        }
+        Map<Object, Object> regionTrainStationMap = redisCacheHelper.loadHash(regionTrainStationKey,
+                LOCK_REGION_TRAIN_STATION + ":" + regionTrainStationKey,
+                () -> loadRegionTrainStationData(fromRegion, toRegion), false);
         List<TicketListDTO> seatResults = regionTrainStationMap.values().stream()
                 .map(each -> JSON.parseObject(each.toString(), TicketListDTO.class))
                 .sorted(new TimeStringComparator())
@@ -159,7 +149,10 @@ public class TicketServiceImpl implements TicketService {
     /**
      * 车站编码 → 城市名映射：车站优先，地区编码补充（兼容按地区编码查询）
      */
-    private Map<Object, Object> loadRegionTrainStationMapping() {
+    private Map<Object,Object> loadRegionTrainStationMapping(){
+        return redisCacheHelper.diagnosed(REGION_TRAIN_STATION_MAPPING,this::loadRegionTrainStationMappingData);
+    }
+    private Map<Object, Object> loadRegionTrainStationMappingData() {
         Map<Object, Object> mapping = new HashMap<>();
         List<StationDO> stationDOList = stationMapper.selectList(Wrappers.emptyWrapper());
         for (StationDO each : stationDOList) {
@@ -179,7 +172,10 @@ public class TicketServiceImpl implements TicketService {
     /**
      * 城市对 → 车次列表：查可售区间并组装
      */
-    private Map<Object, Object> loadRegionTrainStation(String fromRegion, String toRegion) {
+    private Map<Object,Object> loadRegionTrainStation(String fromRegion,String toRegion){
+        return redisCacheHelper.diagnosed(String.format(REGION_TRAIN_STATION,fromRegion,toRegion),() -> loadRegionTrainStationData(fromRegion,toRegion));
+    }
+    private Map<Object, Object> loadRegionTrainStationData(String fromRegion, String toRegion) {
         List<TrainStationRelationDO> relationList = trainStationRelationMapper.selectList(Wrappers
                 .lambdaQuery(TrainStationRelationDO.class)
                 .eq(TrainStationRelationDO::getStartRegion, fromRegion)
@@ -224,11 +220,7 @@ public class TicketServiceImpl implements TicketService {
     }
 
     private TrainDO loadTrain(String trainId) {
-        String cacheValue = redisCacheHelper.safeGet(TRAIN_INFO + trainId, () -> {
-            TrainDO trainDO = trainMapper.selectById(Long.valueOf(trainId));
-            return trainDO == null ? null : JSON.toJSONString(trainDO);
-        }, ADVANCE_TICKET_DAY, TimeUnit.DAYS);
-        return StrUtil.isBlank(cacheValue) ? null : JSON.parseObject(cacheValue, TrainDO.class);
+        return redisCacheHelper.train(trainId, trainMapper);
     }
 
     private List<TrainStationPriceDO> loadTrainStationPrice(TicketListDTO ticketListDTO) {

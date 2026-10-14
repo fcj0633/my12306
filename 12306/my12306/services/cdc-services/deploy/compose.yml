@@ -1,0 +1,48 @@
+services:
+  broker-store-init:
+    image: apache/rocketmq:5.5.0
+    user: "0:0"
+    entrypoint: ["sh", "-c", "chown -R 3000:3000 /store"]
+    volumes: ["broker-store:/store"]
+  namesrv:
+    image: apache/rocketmq:5.5.0
+    command: sh mqnamesrv
+    environment:
+      JAVA_OPT_EXT: -Xms128m -Xmx256m -Xmn128m
+    ports: ["127.0.0.1:${CDC_NAMESRV_PORT:-19876}:9876"]
+  broker:
+    image: apache/rocketmq:5.5.0
+    command: sh mqbroker -n namesrv:9876 -c /home/rocketmq/broker.conf
+    environment:
+      JAVA_OPT_EXT: -Xms256m -Xmx512m -Xmn128m
+    depends_on:
+      namesrv:
+        condition: service_started
+      broker-store-init:
+        condition: service_completed_successfully
+    volumes:
+      - ${CDC_CONFIG_DIR}/broker.conf:/home/rocketmq/broker.conf:ro
+      - broker-store:/home/rocketmq/store
+    ports: ["127.0.0.1:${CDC_BROKER_PORT:-10991}:${CDC_BROKER_PORT:-10991}"]
+  canal:
+    image: canal/canal-server:v1.1.8
+    environment:
+      JAVA_OPTS: -Xms128m -Xmx512m -Xmn128m
+      canal.auto.scan: "false"
+      canal.destinations: inventory
+      canal.instance.master.address: ${CDC_MYSQL_ADDRESS:-host.docker.internal:3306}
+      canal.instance.dbUsername: ${CDC_MYSQL_USER:?temporary or dedicated replication account required}
+      canal.instance.dbPassword: ${CDC_MYSQL_PASSWORD:?replication password required}
+      canal.instance.filter.regex: ${CDC_DATABASE:?explicit source database required}\.t_seat_segment
+      canal.instance.connectionCharset: UTF-8
+      canal.instance.gtidon: "false"
+      canal.instance.mysql.slaveId: ${CDC_SLAVE_ID:-19061}
+      canal.instance.filter.query.dml: "true"
+      canal.instance.filter.query.ddl: "true"
+    volumes:
+      - ${CDC_CONFIG_DIR}/instance.properties:/home/admin/canal-server/conf/inventory/instance.properties
+      - canal-checkpoint:/home/admin/canal-server/conf/inventory-state
+    ports: ["127.0.0.1:${CDC_CANAL_PORT:-11113}:11111"]
+volumes:
+  broker-store:
+  canal-checkpoint:

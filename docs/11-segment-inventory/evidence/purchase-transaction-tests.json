@@ -1,0 +1,22 @@
+{
+  "database": "codex_segment_test_1791635399763865000",
+  "sourceReadOnly": true,
+  "tests": "PurchaseTransactionPerformanceTest",
+  "benchmark": true,
+  "elapsedSeconds": 354.8279999999795,
+  "suites": [
+    {
+      "name": "edu.swu.fcj.my12306.biz.ticketservice.service.PurchaseTransactionPerformanceTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  ],
+  "totals": {
+    "tests": 1,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  }
+}

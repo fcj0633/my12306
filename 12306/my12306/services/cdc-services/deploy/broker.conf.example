@@ -1,0 +1,12 @@
+brokerClusterName=InventoryCdc
+brokerName=inventory-cdc-broker
+brokerId=0
+brokerIP1=127.0.0.1
+listenPort=10991
+brokerRole=ASYNC_MASTER
+flushDiskType=SYNC_FLUSH
+autoCreateTopicEnable=true
+autoCreateSubscriptionGroup=true
+deleteWhen=04
+fileReservedTime=24
+maxMessageSize=270336

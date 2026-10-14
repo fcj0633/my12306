@@ -1,0 +1,20 @@
+{
+  "runId": "matrix_1791648027588193100",
+  "parameters": {
+    "models": "A,B",
+    "rounds": 1,
+    "seconds": 60,
+    "concurrency": 50,
+    "scenarios": "burst-city,burst-remaining,burst-cold,parallel-proof,expiry,pulses",
+    "start_round": 1,
+    "http_warm_seconds": 10
+  },
+  "completed": [
+    "A/burst-city/1",
+    "B/burst-city/1",
+    "A/burst-remaining/1",
+    "B/burst-remaining/1",
+    "A/burst-cold/1"
+  ],
+  "postReboot": true
+}
